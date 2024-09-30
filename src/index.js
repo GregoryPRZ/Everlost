@@ -36,6 +36,13 @@ var config = {
 // création et lancement du jeu
 new Phaser.Game(config);
 
+
+/******************************** */
+//mes variable
+var groupe_plateformes;
+var player;
+var clavier;
+
 /***********************************************************************/
 /** FONCTION PRELOAD 
 /***********************************************************************/
@@ -46,6 +53,7 @@ new Phaser.Game(config);
  */
 function preload() {
   this.load.image("fond", "./src/assets/sky.png");
+  this.load.image("img_plateforme","src/assets/platform.png");
   this.load.spritesheet("img_perso", "src/assets/dude.png", {
     frameWidth: 32,
     frameHeight: 48, //64x64
@@ -64,11 +72,31 @@ function preload() {
  */
 function create() {
   this.add.image(660, 360, "fond");
-  player = this.physics.add.sprite(100, 450, "img_perso");
+  groupe_plateformes = this.physics.add.staticGroup();
+  groupe_plateformes.create(460, 645, "img_plateforme");
+  groupe_plateformes.create(860, 645, "img_plateforme");
+
+  player = this.physics.add.sprite(300, 450, "img_perso");
+  player.setCollideWorldBounds(true);
+  this.physics.add.collider(player,groupe_plateformes);
+  player.setBounce(0.2);
+
+  //touche clavier
+  clavier = this.input.keyboard.createCursorKeys(); 
+  
 }
 
 /***********************************************************************/
 /** FONCTION UPDATE 
 /***********************************************************************/
 
-function update() {}
+function update() {
+  //touche clavier
+  if (clavier.right.isDown == true) {
+    player.setVelocityX(160);
+  } else if(clavier.left.isDown == true){
+    player.setVelocityX(-160);
+  }else{
+    player.setVelocityX(0);
+  }
+}
