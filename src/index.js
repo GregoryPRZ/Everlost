@@ -17,7 +17,7 @@ var config = {
       gravity: {
         y: 300, // gravité verticale : acceleration ddes corps en pixels par seconde
       },
-      debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
+      debug: false, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
   scene: {
@@ -38,7 +38,7 @@ new Phaser.Game(config);
 
 /******************************** */
 //mes variable
-var groupe_plateformes;
+var enemy1;
 var player;
 var clavier;
 var nbSaut = 0;
@@ -47,6 +47,12 @@ var cartes = ["map.json", "map1.json", "map2.json", "map3.json"];
 var plateformeTypes = ["plateforme_1", "plateforme_2", "plateforme_3"]; // Noms des tuiles de plateformes
 var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
 var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
+var direction = -1; // -1 pour gauche, 1 pour droite
+var vitesse = 100; // vitesse de déplacement de l'ennemi
+var limitesGauche = 100; // point limite à gauche
+var limitesDroite = 1000; // point limite à droite
+
+
 
 /***********************************************************************/
 /** FONCTION PRELOAD 
@@ -57,6 +63,11 @@ var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
  * On y trouve surtout le chargement des assets (images, son ..)
  */
 function preload() {
+  // Charger le sprite sheet de l'ennemi
+  this.load.spritesheet("enemi", "src/assets/enemi.png", {
+    frameWidth: 32,
+    frameHeight: 48,
+  });
   this.load.spritesheet("img_perso", "src/assets/dude.png", {
     frameWidth: 32,
     frameHeight: 48, //64x64
@@ -70,9 +81,13 @@ function preload() {
       `src/assets/${carte}`
     );
   }, this);
+  //cherger l'image balle
+  this.load.image('bullet', 'src/assets/bullet.png');
+
 }
 
 /***********************************************************************/
+
 /** FONCTION CREATE 
 /***********************************************************************/
 
@@ -84,11 +99,7 @@ function preload() {
  */
 function create() {
   this.add.image(660, 360, "fond");
-  groupe_plateformes = this.physics.add.staticGroup();
-  groupe_plateformes.create(460, 645, "img_plateforme");
-  groupe_plateformes.create(860, 645, "img_plateforme");
-  groupe_plateformes.create(860, 490, "img_plateforme");
-  groupe_plateformes.create(410, 350, "img_plateforme");
+  
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
   
@@ -109,23 +120,24 @@ function create() {
     tileset
   );
 
+  /****************************player************************************ */
+
   player = this.physics.add.sprite(300, 450, "img_perso");
   player.setCollideWorldBounds(true);
   player.setBounce(0.2);
-
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
   //animation gauche
   this.anims.create({
-    key: "anim_tourne_gauche", // key est le nom de l'animation : doit etre unique poru la scene.
-    frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }), // on prend toutes les frames de img perso numerotées de 0 à 3
+    key: "anim_tourne_gauche", 
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }), 
     frameRate: 10, // vitesse de défilement des frames
-    repeat: -1, // nombre de répétitions de l'animation. -1 = infini
+    repeat: -1, 
   });
   //anim droite
   this.anims.create({
     key: "anim_tourne_droite",
-    frames: this.anims.generateFrameNumbers("img_perso", { start: 5, end: 7 }),
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 5, end: 8 }),
     frameRate: 10,
     repeat: -1,
   });
@@ -142,10 +154,42 @@ function create() {
     frameRate: 10
   });
 
-
-
   calque_plateformes.setCollisionByProperty({ estSolide: true });
   this.physics.add.collider(player, calque_plateformes);
+
+/*------------------------enemy-----------------------------------------------*/
+
+
+  enemy1 = this.physics.add.sprite(500, 450, "enemi"); 
+  enemy1.setCollideWorldBounds(true); // S'assurer que l'ennemi ne sort pas des bords du monde
+  //enemy1.setBounce(0.1); // Ajouter un léger rebond si nécessaire
+  //enemy1.body.allowGravity = false; // Désactiver la gravité
+  this.physics.add.collider(enemy1, calque_plateformes);
+
+  // Ajouter un groupe pour les balles de l'ennemi
+  enemyBullets = this.physics.add.group({
+    defaultKey: 'bullet',
+    maxSize: 10
+  });
+
+  // Animation et déplacement de l'ennemi
+this.anims.create({
+  key: "enemy_gauche",
+  frames: this.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
+  frameRate: 10,
+  repeat: -1,
+});
+this.anims.create({
+  key: "enemy_droite",
+  frames: this.anims.generateFrameNumbers("enemi", { start: 5, end: 8 }),
+  frameRate: 10,
+  repeat: -1,
+});
+
+  
+
+  
+
 
   this.physics.world.setBounds(
     0,
@@ -166,10 +210,25 @@ function create() {
 /** FONCTION UPDATE 
 /***********************************************************************/
 //pour modifier les dimension quand le pero se baisse
-var largeurOriginal = player.body.width;
-var hauteurOriginal = player.body.height;
+/*var largeurOriginal = player.body.width;
+var hauteurOriginal = player.body.height;*/
 
 function update() {
+  // Déplacement de l'ennemi
+  if (enemy1.x <= limitesGauche) {
+    direction = 1; // Changer de direction vers la droite
+  } else if (enemy1.x >= limitesDroite) {
+    direction = -1; // Changer de direction vers la gauche
+  }
+
+  enemy1.setVelocityX(vitesse * direction); // Appliquer la vitesse selon la direction
+
+  // Animation de l'ennemi en fonction de la direction
+  if (direction === -1) {
+    enemy1.anims.play("enemy_gauche", true); // Animation pour aller à gauche
+  } else {
+    enemy1.anims.play("enemy_droite", true); // Animation pour aller à droite
+  }
   //touche clavier
   if (clavier.right.isDown == true) {
     player.setVelocityX(160);
@@ -208,4 +267,8 @@ function update() {
       doubleSaut = false; // Désactiver le double saut
     }
   }
+
+  
 }
+/**************************************************************************************************** */
+
