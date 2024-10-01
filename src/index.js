@@ -42,6 +42,8 @@ new Phaser.Game(config);
 var groupe_plateformes;
 var player;
 var clavier;
+var nbSaut = 0;
+var doubleSaut = false;
 
 /***********************************************************************/
 /** FONCTION PRELOAD 
@@ -75,6 +77,8 @@ function create() {
   groupe_plateformes = this.physics.add.staticGroup();
   groupe_plateformes.create(460, 645, "img_plateforme");
   groupe_plateformes.create(860, 645, "img_plateforme");
+  groupe_plateformes.create(860, 490, "img_plateforme");
+  groupe_plateformes.create(410, 350, "img_plateforme");
 
   player = this.physics.add.sprite(300, 450, "img_perso");
   player.setCollideWorldBounds(true);
@@ -82,21 +86,84 @@ function create() {
   player.setBounce(0.2);
 
   //touche clavier
-  clavier = this.input.keyboard.createCursorKeys(); 
+  clavier = this.input.keyboard.createCursorKeys();
+  //animation gauche
+  this.anims.create({
+    key: "anim_tourne_gauche", // key est le nom de l'animation : doit etre unique poru la scene.
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }), // on prend toutes les frames de img perso numerotées de 0 à 3
+    frameRate: 10, // vitesse de défilement des frames
+    repeat: -1 // nombre de répétitions de l'animation. -1 = infini
+  });
+  //anim droite
+  this.anims.create({
+    key:"anim_tourne_droite",
+    frames:this.anims.generateFrameNumbers("img_perso",{start: 5, end: 7}),
+    frameRate:10,
+    repeat:-1
+  });
+  //anim face
+  this.anims.create({
+    key:"anim_face",
+    frames:[{key:"img_perso",frames:4}],
+    frameRate:20,
+  });
   
 }
 
 /***********************************************************************/
 /** FONCTION UPDATE 
 /***********************************************************************/
+var largeurOriginal = player.body.width;
+var hauteurOriginal = player.body.height;
 
 function update() {
   //touche clavier
   if (clavier.right.isDown == true) {
     player.setVelocityX(160);
+    player.anims.play("anim_tourne_droite",true);
   } else if(clavier.left.isDown == true){
     player.setVelocityX(-160);
+    player.anims.play("anim_tourne_gauche",true);
   }else{
     player.setVelocityX(0);
+    player.anims.play("img_face");
   }
+  //fonction chaut
+  /*if(clavier.space.isDown && player.body.touching.down){
+    player.setVelocityY(-330);
+  }*/
+    if (player.body.touching.down) {
+      jumps = 0; // je met compteur de saut
+      canDoubleJump = true; // Permet le double saut
+    }
+  
+    // Gérer le saut avec un seul appui détecté
+    if (Phaser.Input.Keyboard.JustDown(clavier.space)) {
+      if (jumps < 1 && player.body.touching.down) {
+        // Premier saut
+        player.setVelocityY(-330);
+        jumps++; 
+      } else if (jumps === 1 && canDoubleJump) {
+        // Double saut
+        player.setVelocityY(-330);
+        jumps++; // Le joueur ne peut plus sauter jusqu'à ce qu'il touche le sol
+        canDoubleJump = false; // Désactiver le double saut
+      }
+    }
+  //fonction se baiser à ajuster
+  /*if(clavier.down.isDown){
+    player.setSize(largeurOriginal,hauteurOriginal / 2);
+    player.setOffset(0,hauteurOriginal / 2);
+
+    player.anims.play('seBaisser', true);//pour l'animation se baisser sur l'image
+  }/*else {
+    // Revenir à la taille normale quand la touche bas est relâchée
+    player.setSize(originalWidth, originalHeight); // Rétablir la taille originale
+    player.setOffset(0, 0); // Réinitialiser l'offset
+
+    // Facultatif : revenir à l'animation de marche/debout
+    player.anims.play('Debou', true);
+  }*/
+ /****************************************************************************** */
+
 }
