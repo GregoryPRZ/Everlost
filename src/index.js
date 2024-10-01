@@ -91,7 +91,7 @@ function create() {
   groupe_plateformes.create(410, 350, "img_plateforme");
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
-
+  
   // Choisir une carte aléatoire
   carteChoisie = cartes[Math.floor(Math.random() * cartes.length)];
   const carteDuNiveau = this.add.tilemap(carteChoisie.replace(".json", ""));
@@ -135,6 +135,14 @@ function create() {
     frames: [{ key: "img_perso", frame: 4 }],
     frameRate: 10,
   });
+  // Animation pour se baisser
+  this.anims.create({
+    key: 'anim_baisser',
+    frames: [{ key: 'img_perso', frame: 6 }], // a modif apres num
+    frameRate: 10
+  });
+
+
 
   calque_plateformes.setCollisionByProperty({ estSolide: true });
   this.physics.add.collider(player, calque_plateformes);
@@ -157,6 +165,7 @@ function create() {
 /***********************************************************************/
 /** FONCTION UPDATE 
 /***********************************************************************/
+//pour modifier les dimension quand le pero se baisse
 var largeurOriginal = player.body.width;
 var hauteurOriginal = player.body.height;
 
@@ -168,19 +177,24 @@ function update() {
   } else if (clavier.left.isDown == true) {
     player.setVelocityX(-160);
     player.anims.play("anim_tourne_gauche", true);
+  } // Se baisser
+  else if (clavier.down.isDown) {
+    player.setVelocityX(0); // Stopper le mouvement horizontal quand on se baisse
+    player.setSize(player.width, player.height / 2); // Réduire la taille du personnage pour se baisser
+    player.setOffset(0, player.height / 2); // Ajuster l'offset pour que le bas du personnage touche toujours le sol
+    player.anims.play('anim_baisser', true); // Jouer l'animation pour se baisser
   } else {
     player.setVelocityX(0);
     player.anims.play("anim_face");
+    //à modifier
+    player.setSize(player.width, player.height * 2); // Revenir à la taille normale après s'être baissé
+    //player.setOffset(0, 0); // Réinitialiser l'offset
   }
-  //fonction chaut
-  /*if(clavier.up.isDown && player.body.blocked.down){
-    player.setVelocityY(-200);
-  }*/
   if (player.body.blocked.down) {
     nbSaut = 0; // je met compteur de saut
     doubleSaut = true; // Permet le double saut
   }
-
+   //le saut
   // Gérer le saut avec un seul appui détecté
   if (Phaser.Input.Keyboard.JustDown(clavier.up)) {
     if (nbSaut < 1 && player.body.blocked.down) {
@@ -194,23 +208,4 @@ function update() {
       doubleSaut = false; // Désactiver le double saut
     }
   }
-  //fonction se baiser à ajuster
-  /*if(clavier.down.isDown){
-    player.setSize(largeurOriginal,hauteurOriginal / 2);
-    player.setOffset(0,hauteurOriginal / 2);
-
-    player.anims.play('seBaisser', true);//pour l'animation se baisser sur l'image
-  }/*else {
-    // Revenir à la taille normale quand la touche bas est relâchée
-    player.setSize(originalWidth, originalHeight); // Rétablir la taille originale
-    player.setOffset(0, 0); // Réinitialiser l'offset
-
-    // Facultatif : revenir à l'animation de marche/debout
-    player.anims.play('Debou', true);
-  }*/
-  /****************************************************************************** */
-
-  /* if (clavier.up.isDown && player.body.blocked.down) {
-    player.setVelocityY(-200);
-  }*/
 }
