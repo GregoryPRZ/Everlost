@@ -17,7 +17,7 @@ var config = {
       gravity: {
         y: 300, // gravité verticale : acceleration ddes corps en pixels par seconde
       },
-      debug: false, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
+      debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
   scene: {
@@ -36,7 +36,6 @@ var config = {
 // création et lancement du jeu
 new Phaser.Game(config);
 
-
 /******************************** */
 //mes variable
 var groupe_plateformes;
@@ -44,6 +43,10 @@ var player;
 var clavier;
 var nbSaut = 0;
 var doubleSaut = false;
+var cartes = ["map.json", "map1.json", "map2.json", "map3.json"];
+var plateformeTypes = ["plateforme_1", "plateforme_2", "plateforme_3"]; // Noms des tuiles de plateformes
+var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
+var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
 
 /***********************************************************************/
 /** FONCTION PRELOAD 
@@ -54,12 +57,19 @@ var doubleSaut = false;
  * On y trouve surtout le chargement des assets (images, son ..)
  */
 function preload() {
-  this.load.image("fond", "./src/assets/sky.png");
-  this.load.image("img_plateforme","src/assets/platform.png");
   this.load.spritesheet("img_perso", "src/assets/dude.png", {
     frameWidth: 32,
     frameHeight: 48, //64x64
   });
+  this.load.image("Phaser_tuilesdejeu", "src/assets/tuilesJeu.png");
+
+  // Charger les cartes
+  cartes.forEach(function (carte) {
+    this.load.tilemapTiledJSON(
+      carte.replace(".json", ""),
+      `src/assets/${carte}`
+    );
+  }, this);
 }
 
 /***********************************************************************/
@@ -79,10 +89,28 @@ function create() {
   groupe_plateformes.create(860, 645, "img_plateforme");
   groupe_plateformes.create(860, 490, "img_plateforme");
   groupe_plateformes.create(410, 350, "img_plateforme");
+  //touche clavier
+  clavier = this.input.keyboard.createCursorKeys();
+
+  // Choisir une carte aléatoire
+  carteChoisie = cartes[Math.floor(Math.random() * cartes.length)];
+  const carteDuNiveau = this.add.tilemap(carteChoisie.replace(".json", ""));
+
+  const tileset = carteDuNiveau.addTilesetImage(
+    "tuiles_de_jeu",
+    "Phaser_tuilesdejeu"
+  );
+  const calque_background = carteDuNiveau.createLayer(
+    "calque_background",
+    tileset
+  );
+  const calque_plateformes = carteDuNiveau.createLayer(
+    "calque_plateformes",
+    tileset
+  );
 
   player = this.physics.add.sprite(300, 450, "img_perso");
   player.setCollideWorldBounds(true);
-  this.physics.add.collider(player,groupe_plateformes);
   player.setBounce(0.2);
 
   //touche clavier
@@ -92,22 +120,38 @@ function create() {
     key: "anim_tourne_gauche", // key est le nom de l'animation : doit etre unique poru la scene.
     frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }), // on prend toutes les frames de img perso numerotées de 0 à 3
     frameRate: 10, // vitesse de défilement des frames
-    repeat: -1 // nombre de répétitions de l'animation. -1 = infini
+    repeat: -1, // nombre de répétitions de l'animation. -1 = infini
   });
   //anim droite
   this.anims.create({
-    key:"anim_tourne_droite",
-    frames:this.anims.generateFrameNumbers("img_perso",{start: 5, end: 7}),
-    frameRate:10,
-    repeat:-1
+    key: "anim_tourne_droite",
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 5, end: 7 }),
+    frameRate: 10,
+    repeat: -1,
   });
   //anim face
   this.anims.create({
-    key:"anim_face",
-    frames:[{key:"img_perso",frames:4}],
-    frameRate:20,
+    key: "anim_face",
+    frames: [{ key: "img_perso", frames: 4 }],
+    frameRate: 20,
   });
-  
+
+  calque_plateformes.setCollisionByProperty({ estSolide: true });
+  this.physics.add.collider(player, calque_plateformes);
+
+  this.physics.world.setBounds(
+    0,
+    0,
+    carteDuNiveau.widthInPixels,
+    carteDuNiveau.heightInPixels
+  );
+  this.cameras.main.setBounds(
+    0,
+    0,
+    carteDuNiveau.widthInPixels,
+    carteDuNiveau.heightInPixels
+  );
+  this.cameras.main.startFollow(player);
 }
 
 /***********************************************************************/
@@ -120,11 +164,11 @@ function update() {
   //touche clavier
   if (clavier.right.isDown == true) {
     player.setVelocityX(160);
-    player.anims.play("anim_tourne_droite",true);
-  } else if(clavier.left.isDown == true){
+    player.anims.play("anim_tourne_droite", true);
+  } else if (clavier.left.isDown == true) {
     player.setVelocityX(-160);
-    player.anims.play("anim_tourne_gauche",true);
-  }else{
+    player.anims.play("anim_tourne_gauche", true);
+  } else {
     player.setVelocityX(0);
     player.anims.play("img_face");
   }
@@ -132,24 +176,24 @@ function update() {
   /*if(clavier.space.isDown && player.body.touching.down){
     player.setVelocityY(-330);
   }*/
-    if (player.body.touching.down) {
-      jumps = 0; // je met compteur de saut
-      canDoubleJump = true; // Permet le double saut
+  if (player.body.touching.down) {
+    jumps = 0; // je met compteur de saut
+    canDoubleJump = true; // Permet le double saut
+  }
+
+  // Gérer le saut avec un seul appui détecté
+  if (Phaser.Input.Keyboard.JustDown(clavier.space)) {
+    if (jumps < 1 && player.body.touching.down) {
+      // Premier saut
+      player.setVelocityY(-330);
+      jumps++;
+    } else if (jumps === 1 && canDoubleJump) {
+      // Double saut
+      player.setVelocityY(-330);
+      jumps++; // Le joueur ne peut plus sauter jusqu'à ce qu'il touche le sol
+      canDoubleJump = false; // Désactiver le double saut
     }
-  
-    // Gérer le saut avec un seul appui détecté
-    if (Phaser.Input.Keyboard.JustDown(clavier.space)) {
-      if (jumps < 1 && player.body.touching.down) {
-        // Premier saut
-        player.setVelocityY(-330);
-        jumps++; 
-      } else if (jumps === 1 && canDoubleJump) {
-        // Double saut
-        player.setVelocityY(-330);
-        jumps++; // Le joueur ne peut plus sauter jusqu'à ce qu'il touche le sol
-        canDoubleJump = false; // Désactiver le double saut
-      }
-    }
+  }
   //fonction se baiser à ajuster
   /*if(clavier.down.isDown){
     player.setSize(largeurOriginal,hauteurOriginal / 2);
@@ -164,6 +208,9 @@ function update() {
     // Facultatif : revenir à l'animation de marche/debout
     player.anims.play('Debou', true);
   }*/
- /****************************************************************************** */
+  /****************************************************************************** */
 
+  if (clavier.up.isDown && player.body.blocked.down) {
+    player.setVelocityY(-200);
+  }
 }
