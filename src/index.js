@@ -132,8 +132,8 @@ function create() {
   //anim face
   this.anims.create({
     key: "anim_face",
-    frames: [{ key: "img_perso", frames: 4 }],
-    frameRate: 20,
+    frames: [{ key: "img_perso", frame: 4 }],
+    frameRate: 10,
   });
 
   calque_plateformes.setCollisionByProperty({ estSolide: true });
@@ -170,7 +170,7 @@ function update() {
     player.anims.play("anim_tourne_gauche", true);
   } else {
     player.setVelocityX(0);
-    player.anims.play("img_face");
+    player.anims.play("anim_face");
   }
   //fonction chaut
   /*if(clavier.up.isDown && player.body.blocked.down){
@@ -210,7 +210,7 @@ function update() {
   }*/
   /****************************************************************************** */
 
- /* if (clavier.up.isDown && player.body.blocked.down) {
+  /* if (clavier.up.isDown && player.body.blocked.down) {
     player.setVelocityY(-200);
   }*/
 }
