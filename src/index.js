@@ -173,25 +173,25 @@ function update() {
     player.anims.play("img_face");
   }
   //fonction chaut
-  /*if(clavier.space.isDown && player.body.touching.down){
-    player.setVelocityY(-330);
+  /*if(clavier.up.isDown && player.body.blocked.down){
+    player.setVelocityY(-200);
   }*/
-  if (player.body.touching.down) {
-    jumps = 0; // je met compteur de saut
-    canDoubleJump = true; // Permet le double saut
+  if (player.body.blocked.down) {
+    nbSaut = 0; // je met compteur de saut
+    doubleSaut = true; // Permet le double saut
   }
 
   // Gérer le saut avec un seul appui détecté
-  if (Phaser.Input.Keyboard.JustDown(clavier.space)) {
-    if (jumps < 1 && player.body.touching.down) {
+  if (Phaser.Input.Keyboard.JustDown(clavier.up)) {
+    if (nbSaut < 1 && player.body.blocked.down) {
       // Premier saut
       player.setVelocityY(-330);
-      jumps++;
-    } else if (jumps === 1 && canDoubleJump) {
+      nbSaut++;
+    } else if (nbSaut === 1 && doubleSaut) {
       // Double saut
       player.setVelocityY(-330);
-      jumps++; // Le joueur ne peut plus sauter jusqu'à ce qu'il touche le sol
-      canDoubleJump = false; // Désactiver le double saut
+      nbSaut++; // Le joueur ne peut plus sauter jusqu'à ce qu'il touche le sol
+      doubleSaut = false; // Désactiver le double saut
     }
   }
   //fonction se baiser à ajuster
@@ -210,7 +210,7 @@ function update() {
   }*/
   /****************************************************************************** */
 
-  if (clavier.up.isDown && player.body.blocked.down) {
+ /* if (clavier.up.isDown && player.body.blocked.down) {
     player.setVelocityY(-200);
-  }
+  }*/
 }
