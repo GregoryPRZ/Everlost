@@ -17,7 +17,7 @@ var config = {
       gravity: {
         y: 300, // gravité verticale : acceleration ddes corps en pixels par seconde
       },
-      debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
+      debug: false, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
   scene: {
@@ -38,7 +38,7 @@ new Phaser.Game(config);
 
 /******************************** */
 //mes variable
-var groupe_plateformes;
+var enemy1;
 var player;
 var clavier;
 var nbSaut = 0;
@@ -47,6 +47,10 @@ var cartes = ["map.json", "map1.json", "map2.json", "map3.json"];
 var plateformeTypes = ["plateforme_1"]; // Noms des tuiles de plateformes
 var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
 var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
+var direction = -1; // -1 pour gauche, 1 pour droite
+var vitesse = 100; // vitesse de déplacement de l'ennemi
+var limitesGauche = 100; // point limite à gauche
+var limitesDroite = 1000; // point limite à droite
 
 /***********************************************************************/
 /** FONCTION PRELOAD 
@@ -57,6 +61,11 @@ var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
  * On y trouve surtout le chargement des assets (images, son ..)
  */
 function preload() {
+  // Charger le sprite sheet de l'ennemi
+  this.load.spritesheet("enemi", "src/assets/enemi.png", {
+    frameWidth: 32,
+    frameHeight: 48,
+  });
   this.load.spritesheet("img_perso", "src/assets/dude.png", {
     frameWidth: 32,
     frameHeight: 48, //64x64
@@ -71,9 +80,12 @@ function preload() {
       `src/assets/${carte}`
     );
   }, this);
+  //cherger l'image balle
+  this.load.image("bullet", "src/assets/bullet.png");
 }
 
 /***********************************************************************/
+
 /** FONCTION CREATE 
 /***********************************************************************/
 
@@ -84,6 +96,7 @@ function preload() {
  * ainsi que toutes les instructions permettant de planifier des evenements
  */
 function create() {
+  this.add.image(660, 360, "fond");
   groupe_plateformes = this.physics.add.staticGroup();
   groupe_plateformes.create(460, 645, "img_plateforme");
   groupe_plateformes.create(860, 645, "img_plateforme");
@@ -91,9 +104,6 @@ function create() {
   groupe_plateformes.create(410, 350, "img_plateforme");
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
-  player = this.physics.add.sprite(300, 450, "img_perso");
-  player.setCollideWorldBounds(true);
-  player.setBounce(0.2);
 
   // Choisir une carte aléatoire
   carteChoisie = cartes[Math.floor(Math.random() * cartes.length)];
@@ -112,40 +122,26 @@ function create() {
     tileset
   );
 
-  // Génération procédurale des plateformes
-  const nombreDePlateformes = 200; // Par exemple, 5 plateformes générées
-  for (let i = 0; i < nombreDePlateformes; i++) {
-    // Calculer une position aléatoire pour la plateforme
-    const x = Phaser.Math.Between(50, 3000); // Limiter la position X
-    const y = Phaser.Math.Between(50, 7000); // Hauteur aléatoire
+  /****************************player************************************ */
 
-    // Sélectionner un type de plateforme aléatoire
-    const typePlateforme = plateformeTypes[0];
-
-    // Créer la plateforme
-    const plateforme = groupe_plateformes.create(x, y, typePlateforme);
-    plateforme.setScale(1); // Ajustez la taille si nécessaire
-    plateforme.refreshBody(); // Actualiser les propriétés physiques de la plateforme
-  }
-
-  calque_plateformes.setCollisionByProperty({ estSolide: true });
-  this.physics.add.collider(player, calque_plateformes);
-  this.physics.add.collider(player, groupe_plateformes); // Ajoutez ceci pour les platefo
+  player = this.physics.add.sprite(300, 450, "img_perso");
+  player.setCollideWorldBounds(true);
+  player.setBounce(0.2);
 
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
   //animation gauche
   this.anims.create({
-    key: "anim_tourne_gauche", // key est le nom de l'animation : doit etre unique poru la scene.
-    frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }), // on prend toutes les frames de img perso numerotées de 0 à 3
+    key: "anim_tourne_gauche",
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 0, end: 3 }),
     frameRate: 10, // vitesse de défilement des frames
-    repeat: -1, // nombre de répétitions de l'animation. -1 = infini
+    repeat: -1,
   });
 
   //anim droite
   this.anims.create({
     key: "anim_tourne_droite",
-    frames: this.anims.generateFrameNumbers("img_perso", { start: 5, end: 7 }),
+    frames: this.anims.generateFrameNumbers("img_perso", { start: 5, end: 8 }),
     frameRate: 10,
     repeat: -1,
   });
@@ -157,9 +153,43 @@ function create() {
     frameRate: 10,
     repeat: -1,
   });
+  // Animation pour se baisser
+  this.anims.create({
+    key: "anim_baisser",
+    frames: [{ key: "img_perso", frame: 6 }], // a modif apres num
+    frameRate: 10,
+  });
 
   calque_plateformes.setCollisionByProperty({ estSolide: true });
   this.physics.add.collider(player, calque_plateformes);
+
+  /*------------------------enemy-----------------------------------------------*/
+
+  enemy1 = this.physics.add.sprite(500, 450, "enemi");
+  enemy1.setCollideWorldBounds(true); // S'assurer que l'ennemi ne sort pas des bords du monde
+  //enemy1.setBounce(0.1); // Ajouter un léger rebond si nécessaire
+  //enemy1.body.allowGravity = false; // Désactiver la gravité
+  this.physics.add.collider(enemy1, calque_plateformes);
+
+  // Ajouter un groupe pour les balles de l'ennemi
+  enemyBullets = this.physics.add.group({
+    defaultKey: "bullet",
+    maxSize: 10,
+  });
+
+  // Animation et déplacement de l'ennemi
+  this.anims.create({
+    key: "enemy_gauche",
+    frames: this.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
+    frameRate: 10,
+    repeat: -1,
+  });
+  this.anims.create({
+    key: "enemy_droite",
+    frames: this.anims.generateFrameNumbers("enemi", { start: 5, end: 8 }),
+    frameRate: 10,
+    repeat: -1,
+  });
 
   this.physics.world.setBounds(
     0,
@@ -179,10 +209,26 @@ function create() {
 /***********************************************************************/
 /** FONCTION UPDATE 
 /***********************************************************************/
-var largeurOriginal = player.body.width;
-var hauteurOriginal = player.body.height;
+//pour modifier les dimension quand le pero se baisse
+/*var largeurOriginal = player.body.width;
+var hauteurOriginal = player.body.height;*/
 
 function update() {
+  // Déplacement de l'ennemi
+  if (enemy1.x <= limitesGauche) {
+    direction = 1; // Changer de direction vers la droite
+  } else if (enemy1.x >= limitesDroite) {
+    direction = -1; // Changer de direction vers la gauche
+  }
+
+  enemy1.setVelocityX(vitesse * direction); // Appliquer la vitesse selon la direction
+
+  // Animation de l'ennemi en fonction de la direction
+  if (direction === -1) {
+    enemy1.anims.play("enemy_gauche", true); // Animation pour aller à gauche
+  } else {
+    enemy1.anims.play("enemy_droite", true); // Animation pour aller à droite
+  }
   //touche clavier
   if (clavier.right.isDown == true) {
     player.setVelocityX(160);
@@ -190,19 +236,24 @@ function update() {
   } else if (clavier.left.isDown == true) {
     player.setVelocityX(-160);
     player.anims.play("anim_tourne_gauche", true);
+  } // Se baisser
+  else if (clavier.down.isDown) {
+    player.setVelocityX(0); // Stopper le mouvement horizontal quand on se baisse
+    player.setSize(player.width, player.height / 2); // Réduire la taille du personnage pour se baisser
+    player.setOffset(0, player.height / 2); // Ajuster l'offset pour que le bas du personnage touche toujours le sol
+    player.anims.play("anim_baisser", true); // Jouer l'animation pour se baisser
   } else {
     player.setVelocityX(0);
     player.anims.play("anim_face");
+    //à modifier
+    player.setSize(player.width, player.height * 2); // Revenir à la taille normale après s'être baissé
+    //player.setOffset(0, 0); // Réinitialiser l'offset
   }
-  //fonction chaut
-  /*if(clavier.up.isDown && player.body.blocked.down){
-    player.setVelocityY(-200);
-  }*/
   if (player.body.blocked.down) {
     nbSaut = 0; // je met compteur de saut
     doubleSaut = true; // Permet le double saut
   }
-
+  //le saut
   // Gérer le saut avec un seul appui détecté
   if (Phaser.Input.Keyboard.JustDown(clavier.up)) {
     if (nbSaut < 1 && player.body.blocked.down) {
@@ -216,23 +267,5 @@ function update() {
       doubleSaut = false; // Désactiver le double saut
     }
   }
-  //fonction se baiser à ajuster
-  /*if(clavier.down.isDown){
-    player.setSize(largeurOriginal,hauteurOriginal / 2);
-    player.setOffset(0,hauteurOriginal / 2);
-
-    player.anims.play('seBaisser', true);//pour l'animation se baisser sur l'image
-  }/*else {
-    // Revenir à la taille normale quand la touche bas est relâchée
-    player.setSize(originalWidth, originalHeight); // Rétablir la taille originale
-    player.setOffset(0, 0); // Réinitialiser l'offset
-
-    // Facultatif : revenir à l'animation de marche/debout
-    player.anims.play('Debou', true);
-  }*/
-  /****************************************************************************** */
-
-  /* if (clavier.up.isDown && player.body.blocked.down) {
-    player.setVelocityY(-200);
-  }*/
 }
+/**************************************************************************************************** */
