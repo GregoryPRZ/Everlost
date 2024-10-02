@@ -44,7 +44,7 @@ var clavier;
 var nbSaut = 0;
 var doubleSaut = false;
 var cartes = ["map.json", "map1.json", "map2.json", "map3.json"];
-var plateformeTypes = ["plateforme_1", "plateforme_2", "plateforme_3"]; // Noms des tuiles de plateformes
+var plateformeTypes = ["plateforme_1"]; // Noms des tuiles de plateformes
 var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
 var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
 
@@ -62,6 +62,7 @@ function preload() {
     frameHeight: 48, //64x64
   });
   this.load.image("Phaser_tuilesdejeu", "src/assets/tuilesJeu.png");
+  this.load.image("img_plateforme", "src/assets/platform.png");
 
   // Charger les cartes
   cartes.forEach(function (carte) {
@@ -83,7 +84,6 @@ function preload() {
  * ainsi que toutes les instructions permettant de planifier des evenements
  */
 function create() {
-  this.add.image(660, 360, "fond");
   groupe_plateformes = this.physics.add.staticGroup();
   groupe_plateformes.create(460, 645, "img_plateforme");
   groupe_plateformes.create(860, 645, "img_plateforme");
@@ -91,6 +91,9 @@ function create() {
   groupe_plateformes.create(410, 350, "img_plateforme");
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
+  player = this.physics.add.sprite(300, 450, "img_perso");
+  player.setCollideWorldBounds(true);
+  player.setBounce(0.2);
 
   // Choisir une carte aléatoire
   carteChoisie = cartes[Math.floor(Math.random() * cartes.length)];
@@ -109,9 +112,25 @@ function create() {
     tileset
   );
 
-  player = this.physics.add.sprite(300, 450, "img_perso");
-  player.setCollideWorldBounds(true);
-  player.setBounce(0.2);
+  // Génération procédurale des plateformes
+  const nombreDePlateformes = 200; // Par exemple, 5 plateformes générées
+  for (let i = 0; i < nombreDePlateformes; i++) {
+    // Calculer une position aléatoire pour la plateforme
+    const x = Phaser.Math.Between(50, 3000); // Limiter la position X
+    const y = Phaser.Math.Between(50, 7000); // Hauteur aléatoire
+
+    // Sélectionner un type de plateforme aléatoire
+    const typePlateforme = plateformeTypes[0];
+
+    // Créer la plateforme
+    const plateforme = groupe_plateformes.create(x, y, typePlateforme);
+    plateforme.setScale(1); // Ajustez la taille si nécessaire
+    plateforme.refreshBody(); // Actualiser les propriétés physiques de la plateforme
+  }
+
+  calque_plateformes.setCollisionByProperty({ estSolide: true });
+  this.physics.add.collider(player, calque_plateformes);
+  this.physics.add.collider(player, groupe_plateformes); // Ajoutez ceci pour les platefo
 
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
@@ -122,6 +141,7 @@ function create() {
     frameRate: 10, // vitesse de défilement des frames
     repeat: -1, // nombre de répétitions de l'animation. -1 = infini
   });
+
   //anim droite
   this.anims.create({
     key: "anim_tourne_droite",
@@ -129,11 +149,13 @@ function create() {
     frameRate: 10,
     repeat: -1,
   });
+
   //anim face
   this.anims.create({
     key: "anim_face",
     frames: [{ key: "img_perso", frame: 4 }],
     frameRate: 10,
+    repeat: -1,
   });
 
   calque_plateformes.setCollisionByProperty({ estSolide: true });
