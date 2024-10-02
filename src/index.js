@@ -7,7 +7,7 @@
 // configuration générale du jeu
 var config = {
   type: Phaser.AUTO,
-  width: 1320, // largeur en pixels
+  width: 1280, // largeur en pixels
   height: 720, // hauteur en pixels
   physics: {
     // définition des parametres physiques
@@ -17,7 +17,7 @@ var config = {
       gravity: {
         y: 300, // gravité verticale : acceleration ddes corps en pixels par seconde
       },
-      debug: false, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
+      debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
   scene: {
@@ -43,7 +43,6 @@ var player;
 var clavier;
 var nbSaut = 0;
 var doubleSaut = false;
-var cartes = ["map.json", "map1.json", "map2.json", "map3.json"];
 var plateformeTypes = ["plateforme_1"]; // Noms des tuiles de plateformes
 var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
 var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
@@ -61,6 +60,12 @@ var limitesDroite = 1000; // point limite à droite
  * On y trouve surtout le chargement des assets (images, son ..)
  */
 function preload() {
+  // Charger le jeu de tuiles
+  this.load.image("tuilesJeu", "src/assets/tuilesJeu.png");
+
+  // Charger le fichier JSON de la carte
+  this.load.tilemapTiledJSON("carte", "src/assets/map1.json");
+
   // Charger le sprite sheet de l'ennemi
   this.load.spritesheet("enemi", "src/assets/enemi.png", {
     frameWidth: 32,
@@ -70,18 +75,12 @@ function preload() {
     frameWidth: 32,
     frameHeight: 48, //64x64
   });
-  this.load.image("Phaser_tuilesdejeu", "src/assets/tuilesJeu.png");
-  this.load.image("img_plateforme", "src/assets/platform.png");
 
-  // Charger les cartes
-  cartes.forEach(function (carte) {
-    this.load.tilemapTiledJSON(
-      carte.replace(".json", ""),
-      `src/assets/${carte}`
-    );
-  }, this);
   //cherger l'image balle
   this.load.image("bullet", "src/assets/bullet.png");
+
+  //background
+  this.load.image("fond", "src/assets/images/background.png");
 }
 
 /***********************************************************************/
@@ -96,38 +95,38 @@ function preload() {
  * ainsi que toutes les instructions permettant de planifier des evenements
  */
 function create() {
-  this.add.image(660, 360, "fond");
-  groupe_plateformes = this.physics.add.staticGroup();
-  groupe_plateformes.create(460, 645, "img_plateforme");
-  groupe_plateformes.create(860, 645, "img_plateforme");
-  groupe_plateformes.create(860, 490, "img_plateforme");
-  groupe_plateformes.create(410, 350, "img_plateforme");
-  //touche clavier
-  clavier = this.input.keyboard.createCursorKeys();
+  // Créer l'image de fond
+  const background = this.add.image(0, 0, "fond").setOrigin(0, 0);
 
-  // Choisir une carte aléatoire
-  carteChoisie = cartes[Math.floor(Math.random() * cartes.length)];
-  const carteDuNiveau = this.add.tilemap(carteChoisie.replace(".json", ""));
+  // chargement de la carte
+  const carteDuNiveau = this.add.tilemap("carte");
 
-  const tileset = carteDuNiveau.addTilesetImage(
-    "tuiles_de_jeu",
-    "Phaser_tuilesdejeu"
-  );
+  // chargement du jeu de tuiles
+  const tileset = carteDuNiveau.addTilesetImage("tuiles_de_jeu", "tuilesJeu");
+
+  // chargement du calque calque_background
   const calque_background = carteDuNiveau.createLayer(
     "calque_background",
     tileset
   );
+
+  // chargement du calque calque_plateformes
   const calque_plateformes = carteDuNiveau.createLayer(
     "calque_plateformes",
     tileset
   );
+
+  // Configurer les collisions pour le calque des plateformes
+  calque_plateformes.setCollisionByProperty({ estSolide: true });
+  //touche clavier
+  clavier = this.input.keyboard.createCursorKeys();
 
   /****************************player************************************ */
 
   player = this.physics.add.sprite(300, 450, "img_perso");
   player.setCollideWorldBounds(true);
   player.setBounce(0.2);
-
+  this.physics.add.collider(player, calque_plateformes);
   //touche clavier
   clavier = this.input.keyboard.createCursorKeys();
   //animation gauche
@@ -159,9 +158,6 @@ function create() {
     frames: [{ key: "img_perso", frame: 6 }], // a modif apres num
     frameRate: 10,
   });
-
-  calque_plateformes.setCollisionByProperty({ estSolide: true });
-  this.physics.add.collider(player, calque_plateformes);
 
   /*------------------------enemy-----------------------------------------------*/
 
@@ -239,15 +235,13 @@ function update() {
   } // Se baisser
   else if (clavier.down.isDown) {
     player.setVelocityX(0); // Stopper le mouvement horizontal quand on se baisse
-    player.setSize(player.width, player.height / 2); // Réduire la taille du personnage pour se baisser
     player.setOffset(0, player.height / 2); // Ajuster l'offset pour que le bas du personnage touche toujours le sol
     player.anims.play("anim_baisser", true); // Jouer l'animation pour se baisser
   } else {
     player.setVelocityX(0);
     player.anims.play("anim_face");
     //à modifier
-    player.setSize(player.width, player.height * 2); // Revenir à la taille normale après s'être baissé
-    //player.setOffset(0, 0); // Réinitialiser l'offset
+    player.setOffset(0, 0); // Réinitialiser l'offset
   }
   if (player.body.blocked.down) {
     nbSaut = 0; // je met compteur de saut
