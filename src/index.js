@@ -96,7 +96,8 @@ function preload() {
  */
 function create() {
   // Créer l'image de fond
-  const background = this.add.image(0, 0, "fond").setOrigin(0, 0);
+  const background = this.add.image(0, -250, "fond").setOrigin(0, 0);
+  background.setScrollFactor(0); // Cela fixe l'image de fond à la caméra
 
   // chargement de la carte
   const carteDuNiveau = this.add.tilemap("carte");
@@ -199,6 +200,7 @@ function create() {
     carteDuNiveau.widthInPixels,
     carteDuNiveau.heightInPixels
   );
+
   this.cameras.main.startFollow(player);
 }
 
