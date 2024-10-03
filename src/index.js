@@ -38,13 +38,7 @@ var config = {
 // création et lancement du jeu
 new Phaser.Game(config);
 
-/******************************** */
-// mes variables
-var plateformeTypes = ["plateforme_1"]; // Noms des tuiles de plateformes
-var platformeHauteurMin = 400; // Hauteur minimale pour les plateformes
-var platformeHauteurMax = 600; // Hauteur maximale pour les plateformes
-var limitesGauche = 100; // point limite à gauche
-var limitesDroite = 1000; // point limite à droite
+/******************************** */ // mes variables
 
 var player; // Variable pour stocker l'instance du joueur
 var enemy; // Variable pour stocker l'instance de l'ennemi
@@ -63,10 +57,6 @@ function preload() {
     frameWidth: 32,
     frameHeight: 48,
   });
-  this.load.spritesheet("img_perso", "src/assets/dude.png", {
-    frameWidth: 32,
-    frameHeight: 48, // 64x64
-  });
 
   this.load.spritesheet("player_marche", "src/assets/player_walking.png", {
     frameWidth: 64,
@@ -83,6 +73,21 @@ function preload() {
     frameHeight: 64,
   });
 
+  this.load.spritesheet("player_crouch", "src/assets/player_crouch.png", {
+    frameWidth: 64,
+    frameHeight: 64,
+  });
+
+  this.load.spritesheet("player_dash", "src/assets/player_dash.png", {
+    frameWidth: 64,
+    frameHeight: 64,
+  });
+
+  this.load.spritesheet("player_jump", "src/assets/player_jump.png", {
+    frameWidth: 64,
+    frameHeight: 64,
+  });
+
   // Charger l'image balle
   this.load.image("bullet", "src/assets/bullet.png");
   // Background
@@ -93,9 +98,7 @@ function preload() {
   this.load.image("bloc3", "src/assets/bloc3.png");
   this.load.image("bloc4", "src/assets/bloc4.png");
   this.load.image("bloc5", "src/assets/bloc5.png");
-  this.load.image("bloc6", "src/assets/bloc6.png");
 }
-
 /***********************************************************************/
 
 /** FONCTION CREATE 

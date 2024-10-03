@@ -1,13 +1,13 @@
 export class Level {
   constructor(scene) {
     this.scene = scene;
-    this.blocks = ["bloc1", "bloc2", "bloc3", "bloc4", "bloc5", "bloc6"];
-    this.platforms = this.scene.physics.add.staticGroup(); // Groupement de plateformes statiques
-    this.mapWidth = 7080; // Largeur maximale de la carte
-    this.mapHeight = 3072; // Hauteur maximale de la carte
-    this.platformHeight = 700; // Hauteur entre chaque niveau de colonnes
-    this.platformSpacingX = 500; // Espacement entre les plateformes sur l'axe X
-    this.startY = 2800; // Position de départ sur l'axe Y pour les plateformes
+    this.blocks = ["bloc1", "bloc2", "bloc3", "bloc4", "bloc5"];
+    this.platforms = this.scene.physics.add.staticGroup();
+    this.mapWidth = 7080;
+    this.mapHeight = 3072;
+    this.platformHeight = 700;
+    this.platformSpacingX = 500;
+    this.startY = 2800;
     this.generateColumnsOfPlatforms();
   }
 
@@ -23,10 +23,10 @@ export class Level {
           this.blocks[Phaser.Math.Between(0, this.blocks.length - 1)];
         const platform = this.platforms
           .create(lastX, baseY, blockKey)
-          .setOrigin(0, 0);
-        platform.body.immovable = true; // Assurez-vous que la plateforme ne bouge pas
-        platform.body.setSize(platform.width, platform.height); // S'assurer que le corps a la bonne taille
-        lastX += this.platformSpacingX; // Espacement pour la prochaine plateforme
+          .setOrigin(0.5, 0.5); // Centrer l'image
+        platform.body.immovable = true;
+        platform.body.setSize(platform.width, platform.height, false); // Réajuster la hitbox
+        lastX += this.platformSpacingX;
       }
     }
   }
