@@ -88,6 +88,11 @@ function preload() {
     frameHeight: 64,
   });
 
+  this.load.spritesheet("player_dash", "src/assets/player_jdash.png", {
+    frameWidth: 64,
+    frameHeight: 64,
+  });
+
   // Charger l'image balle
   this.load.image("bullet", "src/assets/bullet.png");
   // Background
