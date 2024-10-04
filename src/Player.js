@@ -26,7 +26,6 @@ export class Player {
 
     // Initialisation des animations
     this.Animations();
-    this.Saut();
   }
 
   Animations() {
@@ -94,63 +93,69 @@ export class Player {
     });
   }
 
-  update(time, delta) {
-    // Logique de mouvement
+  update() {
+    // Réinitialiser la taille et l'offset de la hitbox à chaque mise à jour
+    this.player.body.setSize(34, 60);
+    this.player.body.setOffset(16, 0);
+
+    // Appeler les fonctions pour gérer le mouvement, le dash et le saut
+    this.AnimMouvement();
+    this.AnimDash();
+    this.AnimJump();
+  }
+
+  AnimMouvement() {
     if (!this.isDashing) {
-      if (this.clavier.right.isDown) {
-        this.player.setVelocityX(160);
-        this.player.flipX = false; // Afficher le sprite normalement
-        this.player.anims.play("anim_tourne_droite", true);
-      } else if (this.clavier.left.isDown) {
-        this.player.setVelocityX(-160);
-        this.player.flipX = true; // Afficher le sprite en miroir
-        this.player.anims.play("anim_tourne_gauche", true);
-      } else if (this.clavier.right.isDown && !this.player.body.blocked.down) {
-        this.player.setVelocityX(160);
-        this.player.anims.play("anim_saut", true);
-      } else if (this.clavier.left.isDown && !this.player.body.blocked.down) {
-        this.player.setVelocityX(-160);
-        this.player.flipX = true; // Afficher le sprite en miroir
-        this.player.anims.play("anim_saut", true);
-      } else if (this.clavier.down.isDown && this.player.body.blocked.down) {
-        this.player.setVelocityX(80);
-        this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
-      } else if (this.clavier.down.isDown && this.clavier.left.isDown) {
-        this.player.setVelocityX(-80);
-        this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
+      if (this.clavier.down.isDown && this.player.body.blocked.down) {
+        // Si le joueur se baisse
+        this.player.body.setSize(34, 32); // Nouvelle taille plus petite
+        this.player.body.setOffset(16, 32); // Ajuster l'offset pour que la hitbox soit correctement positionnée
+
+        if (this.clavier.left.isDown) {
+          this.player.setVelocityX(-80);
+          this.player.flipX = true;
+          this.player.anims.play("anim_baisser", true);
+        } else if (this.clavier.right.isDown) {
+          this.player.setVelocityX(80);
+          this.player.flipX = false;
+          this.player.anims.play("anim_baisser", true);
+        } else {
+          this.player.setVelocityX(0);
+          this.player.anims.play("anim_baisser", true);
+        }
       } else {
-        this.player.setVelocityX(0);
-        // Jouer l'animation de debout uniquement si le joueur est au sol et n'est pas en train de sauter
-        if (this.player.body.blocked.down) {
-          this.player.anims.play("anim_face", true);
+        // Rétablir la hitbox originale lorsque le joueur ne se baisse pas
+        this.player.body.setSize(34, 60);
+        this.player.body.setOffset(16, 0);
+
+        if (this.clavier.right.isDown) {
+          this.player.setVelocityX(160);
+          this.player.anims.play("anim_tourne_droite", true);
+          this.player.flipX = false;
+        } else if (this.clavier.left.isDown) {
+          this.player.setVelocityX(-160);
+          this.player.flipX = true;
+          this.player.anims.play("anim_tourne_droite", true);
+        } else {
+          this.player.setVelocityX(0);
+          if (this.player.body.blocked.down) {
+            this.player.anims.play("anim_face", true);
+          }
         }
       }
-
-      // Gestion du dash
-      if (this.keyX.isDown && this.canDash) {
-        this.startDash();
-      }
-      if (this.isDashing) {
-        this.player.anims.play("anim_dash", true);
-      }
     }
-
-    if (this.clavier.down.isDown && this.clavier.right.isDown) {
-      this.player.setVelocityX(80);
-      this.player.anims.play("anim_baisser", true);
-    }
-
-    // Appel de la méthode Saut pour gérer le saut
-    this.Saut();
-
-    // Vérifier si le joueur est au sol pour gérer les animations de saut
-    if (!this.player.body.blocked.down) {
-      // Si le joueur n'est pas au sol, jouer l'animation de saut
-      this.player.anims.play("anim_saut", true);
-    }
-
-    this.player.body.setSize(38, 64);
   }
+
+  AnimDash() {
+    if (this.keyX.isDown && this.canDash) {
+      this.startDash();
+    }
+
+    if (this.isDashing) {
+      this.player.anims.play("anim_dash", true);
+    }
+  }
+
   startDash() {
     this.isDashing = true;
     this.canDash = false;
@@ -172,29 +177,33 @@ export class Player {
 
   stopDash() {
     this.isDashing = false;
-    this.player.setVelocityX(0); // Arrêter la vitesse après le dash
+    this.player.setVelocityX(0);
+  }
+
+  AnimJump() {
+    if (!this.player.body.blocked.down) {
+      this.player.anims.play("anim_saut", true);
+    }
+
+    this.Saut();
   }
 
   Saut() {
-    // Vérifie si le joueur est au sol pour réinitialiser les sauts
     if (this.player.body.blocked.down) {
-      this.nbSaut = 0; // Réinitialiser le compteur de saut
-      this.doubleSaut = true; // Réactiver le double saut
+      this.nbSaut = 0;
+      this.doubleSaut = true;
     }
 
-    // Gérer le saut avec un seul appui détecté
     if (Phaser.Input.Keyboard.JustDown(this.space)) {
-      // Assurez-vous que le joueur est au sol ou qu'il a encore un double saut
       if (this.nbSaut < 1) {
         this.player.setVelocityY(-330);
         this.nbSaut++;
         this.player.anims.play("anim_saut", true);
       } else if (this.nbSaut === 1 && this.doubleSaut) {
-        // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
-        this.doubleSaut = false; // Désactiver le double saut
-        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        this.doubleSaut = false;
+        this.player.anims.play("anim_saut", true);
       }
     }
   }

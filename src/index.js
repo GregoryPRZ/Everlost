@@ -6,6 +6,9 @@
 import { Player } from "./Player.js"; // Assurez-vous d'importer correctement votre classe
 import { Enemy } from "./enemy.js"; // Assurez-vous d'importer correctement votre classe
 import { Level } from "./levelmap.js"; // Assurez-vous que le chemin est correct
+import { SceneMenu } from "./SceneMenu.js";
+import { Scenario } from "./scenario.js";
+import { Controle } from "./controle.js";
 
 // configuration générale du jeu
 var config = {
@@ -42,12 +45,20 @@ new Phaser.Game(config);
 
 var player; // Variable pour stocker l'instance du joueur
 var enemy; // Variable pour stocker l'instance de l'ennemi
+var menu;
+var scenario;
+var controle;
 
 /***********************************************************************/
 /** FONCTION PRELOAD 
 /***********************************************************************/
 
 function preload() {
+  this.load.image("controle", "src/assets/controles.png");
+
+  this.load.image("accueil", "src/assets/accueil.png");
+  this.load.image("scenario", "src/assets/scenario.png");
+  this.load.image("start", "src/assets/start.png");
   // Charger le jeu de tuiles
   this.load.image("tuilesJeu", "src/assets/tuilesJeu.png");
   // Charger le fichier JSON de la carte
@@ -110,6 +121,15 @@ function preload() {
 /***********************************************************************/
 
 function create() {
+  const menu = new SceneMenu(this);
+  menu.createImg();
+
+  const scenario = new Scenario(this);
+  scenario.createScenario();
+
+  const controle = new Controle(this);
+  controle.createControle();
+
   // Créer l'image de fond
   const background = this.add.image(0, -250, "fond").setOrigin(0, 0);
   background.setScrollFactor(0); // Cela fixe l'image de fond à la caméra
@@ -141,6 +161,7 @@ function create() {
   player = new Player(this, 100, 2700, "img_perso", calque_plateformes); // Position et texture du joueur
   enemy = new Enemy(this, 600, 500, "enemi", player, calque_plateformes); // Position et texture de l'ennemi
   const level = new Level(this);
+
   this.cameras.main.setBounds(0, 0, 7080, 3072); // Définir les limites de la caméra
   this.cameras.main.startFollow(player.player); // Suivre le joueur
   // Ajouter les collisions entre le joueur et les blocs
@@ -148,15 +169,29 @@ function create() {
 
   // Ajouter les collisions entre l'ennemi et les blocs
   this.physics.add.collider(enemy.enemy, level.platforms); // Assurez-vous que votre classe Enemy a une propriété 'enemy' pour le sprite
+  this.input.on("pointerdown", () => {
+    this.scene.start("Scenario"); // Ou commencez votre jeu ici
+  });
 }
 
 function update() {
-  // Appeler la méthode update des classes Player et Enemy
   if (player) {
     player.update();
   }
   if (enemy) {
     enemy.update();
+  }
+
+  if (menu) {
+    menu.update();
+  }
+
+  if (scenario) {
+    scenario.update();
+  }
+
+  if (controle) {
+    controle.update();
   }
 }
 
