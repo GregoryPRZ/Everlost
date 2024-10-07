@@ -1,43 +1,53 @@
-export class Scenario {
-  constructor(scene) {
-    this.scene = scene;
-    this.createScenario();
+export class Scenario extends Phaser.Scene {
+  constructor() {
+    super({ key: "Scenario" }); // Clé de la scène pour l'identifier
   }
 
-  update() {
+  create() {
+    // Appeler la méthode pour créer le scénario lors de la création de la scène
     this.createScenario();
   }
 
   createScenario() {
-    // Ajouter l'image d'accueil
-    this.scene.add.image(
-      this.scene.cameras.main.centerX,
-      this.scene.cameras.main.centerY,
+    // Ajouter l'image de scénario
+    this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
       "scenario"
     );
 
     // Créer le bouton Start et définir une échelle plus petite
-    const startButton = this.scene.add
+    const startButton = this.add
       .image(
-        this.scene.cameras.main.centerX,
-        this.scene.cameras.main.centerY + 100,
+        this.cameras.main.centerX,
+        this.cameras.main.centerY + 315,
         "start"
       )
       .setInteractive()
-      .setScale(0.15); // Réduit la taille du bouton à 50%
+      .setScale(1); // Réduit la taille du bouton à 10%
 
     // Ajouter un événement au clic sur le bouton Start
     startButton.on("pointerdown", () => {
-      this.scene.start("Controle"); // Remplace 'GameScene' par le nom de ta scène de jeu
+      this.scene.start("MapScene"); // Remplace 'Controle' par le nom de ta scène de contrôle
     });
 
     // Ajouter un curseur pour le bouton
     startButton.on("pointerover", () => {
-      startButton.setScale(0.2); // Agrandir légèrement le bouton au survol
+      this.tweens.add({
+        targets: startButton,
+        scale: 1.2, // Agrandir légèrement le bouton au survol
+        duration: 300, // Durée de l'animation en millisecondes
+        ease: "Power2", // Type d'animation
+      });
     });
 
     startButton.on("pointerout", () => {
-      startButton.setScale(0.15); // Revenir à la taille réduite
+      this.tweens.add({
+        targets: startButton,
+        scale: 1, // Revenir à la taille réduite
+        duration: 300, // Durée de l'animation en millisecondes
+        ease: "Power2", // Type d'animation
+      });
     });
   }
 }

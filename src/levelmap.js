@@ -1,13 +1,25 @@
-export class Level {
-  constructor(scene) {
-    this.scene = scene;
+// Level.js
+export class Level extends Phaser.Scene {
+  constructor() {
+    super({ key: "Level" }); // Définir la clé de la scène
     this.blocks = ["bloc1", "bloc2", "bloc3", "bloc4", "bloc5"];
-    this.platforms = this.scene.physics.add.staticGroup();
+    this.platforms = null;
     this.mapWidth = 7080;
     this.mapHeight = 3072;
     this.platformHeight = 700;
     this.platformSpacingX = 500;
     this.startY = 2800;
+  }
+
+  preload() {
+    // Charger les blocs (assurez-vous que les images existent dans votre répertoire)
+    for (const block of this.blocks) {
+      this.load.image(block, `src/assets/${block}.png`);
+    }
+  }
+
+  create() {
+    this.platforms = this.physics.add.staticGroup();
     this.generateColumnsOfPlatforms();
   }
 
@@ -29,5 +41,9 @@ export class Level {
         lastX += this.platformSpacingX;
       }
     }
+  }
+
+  update() {
+    // Logique de mise à jour si nécessaire
   }
 }
