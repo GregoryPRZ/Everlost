@@ -25,14 +25,15 @@ export class Enemy {
     this.isShooting = false;
     this.invincible = false;
 
+    // Limites de déplacement
+    this.leftLimit = x - 200; // Limite gauche
+    this.rightLimit = x + 200; // Limite droite
+
     // Gestion des points de vie
     this.lifePoints = 3;
 
     // Initialisation du comportement de tir
     this.initShooting();
-
-    // Si tu veux ajouter des comportements basés sur le type d'ennemi, tu peux ajouter une condition ici
-    // Exemple : if (this.type === 2) { ... }
   }
 
   // Initialisation du comportement de tir
@@ -76,13 +77,6 @@ export class Enemy {
 
   // Gérer la collision avec une plateforme
   handlePlatformCollision() {}
-  deplacement() {
-    if (this.enemy.handlePlatformCollision) {
-      this.direction = -1;
-    } else {
-      this.direction = 1;
-    }
-  }
 
   // Mettre à jour l'ennemi à chaque frame
   update() {
@@ -91,9 +85,26 @@ export class Enemy {
 
   // Déplacement de l'ennemi
   move() {
+    // Vérifie si l'ennemi atteint la limite gauche ou droite
+    if (this.enemy.x <= this.leftLimit) {
+      this.direction = 1; // Change la direction à droite
+    } else if (this.enemy.x >= this.rightLimit) {
+      this.direction = -1; // Change la direction à gauche
+    }
+
+    // Déplacement de l'ennemi
     this.enemy.setVelocityX(this.speed * this.direction);
+
+    // Animation et inversion de l'échelle selon la direction
+    if (this.direction === 1) {
+      this.enemy.play("enemy_droite", true); // Joue l'animation pour aller à droite
+      this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
+    } else {
+      this.enemy.play("enemy_gauche", true); //
+      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
+    }
   }
-  // à implenter
+
   // Diminuer les points de vie de l'ennemi
   decreaseHealthPoints() {
     this.lifePoints--;
@@ -135,5 +146,4 @@ export class Enemy {
   isDead() {
     return this.lifePoints <= 0;
   }
-  //
 }

@@ -20,6 +20,10 @@ export class Player {
       Phaser.Input.Keyboard.KeyCodes.Z // Change 'Z' to 'X' for dash
     );
 
+    this.attack = this.scene.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.X // Change 'Z' to 'X' for dash
+    );
+
     // Variables pour le dash
     this.isDashing = false;
     this.dashSpeed = 500;
@@ -97,6 +101,17 @@ export class Player {
       frameRate: 10,
       repeat: -1,
     });
+
+    // Animation dash
+    this.scene.anims.create({
+      key: "anim_attaque",
+      frames: this.scene.anims.generateFrameNumbers("player_attack", {
+        start: 0,
+        end: 6,
+      }),
+      frameRate: 10,
+      repeat: 0,
+    });
   }
 
   update() {
@@ -108,12 +123,37 @@ export class Player {
     this.AnimMouvement();
     this.AnimDash();
     this.Saut();
+    this.AnimAttaque();
+  }
+
+  AnimAttaque() {
+    if (Phaser.Input.Keyboard.JustDown(this.attack)) {
+      // Lancer l'animation d'attaque
+      this.player.anims.play("anim_attaque", true);
+
+      // Vérifier dans quelle direction le joueur est orienté (gauche ou droite)
+      if (this.player.flipX) {
+        this.player.setVelocityX(-200);
+      } else {
+        this.player.setVelocityX(200);
+      }
+    }
   }
 
   AnimMouvement() {
+    if (
+      this.player.anims.currentAnim &&
+      this.player.anims.currentAnim.key === "anim_attaque" &&
+      this.player.anims.isPlaying
+    ) {
+      return; // On sort de la fonction si l'attaque est en cours
+    }
+
     // Gérer le mouvement du joueur sur l'axe horizontal
     if (this.clavier.down.isDown && this.player.body.blocked.down) {
       // Si la flèche du bas est enfoncée et que le joueur est au sol
+      this.player.body.setSize(34, 30);
+      this.player.body.setOffset(16, 30);
 
       if (this.clavier.left.isDown) {
         this.player.setVelocityX(-80); // Déplacement vers la gauche, vitesse réduite
