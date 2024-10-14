@@ -1,7 +1,7 @@
 import { Player } from "./Player.js"; // Assurez-vous d'importer correctement votre classe
 import { Enemy } from "./enemy.js"; // Assurez-vous d'importer correctement votre classe
 import { Vine } from "./vine.js";
-import {CarnivorousPlant} from "./CarnivorousPlant.js";
+import { CarnivorousPlant } from "./CarnivorousPlant.js";
 
 export class MapScene extends Phaser.Scene {
   constructor() {
@@ -18,27 +18,25 @@ export class MapScene extends Phaser.Scene {
 
   preload() {
     // Charger les sons
-    this.load.audio('jumpSound', 'src/assets/sounds/se_jump.mp3');
-    this.load.audio('dashSound', 'src/assets/sounds/se_dash.mp3');
-    this.load.audio('attackSound', 'src/assets/sounds/se_sword.mp3');
-    this.load.audio('mapMusic', 'src/assets/sounds/bgm_map.mp3'); // Remplacez par le chemin de votre son
-    // Charger d'autres ressources...
+    this.load.audio("jumpSound", "src/assets/sounds/se_jump.mp3");
+    this.load.audio("dashSound", "src/assets/sounds/se_dash.mp3");
+    this.load.audio("attackSound", "src/assets/sounds/se_sword.mp3");
+    this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
   }
 
   create() {
-    //console.log("MapScene: create() démarré"); // Débogage : Suivre l'initialisation
-
     // Chargement de la carte
     this.carteDuNiveau = this.add.tilemap("carte");
     // Ajoutez l'image de fond et positionnez-la à l'origine
-    let fond = this.add.image(0, 0, 'fond').setOrigin(0, 0);
+    let fond = this.add.image(0, 0, "fond").setOrigin(0, 0);
 
     // Ajustez l'échelle de l'image de fond pour qu'elle remplisse toute la scène
     fond.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-    // Arrêter la musique du titre
-    this.scene.get('SceneMenu').titleMusic.stop();
 
-    this.mapMusic = this.sound.add('mapMusic', { loop: true });
+    fond.setScrollFactor(0); // Cela fixe l'image de fond à la caméra
+    this.scene.get("SceneMenu").titleMusic.stop();
+
+    this.mapMusic = this.sound.add("mapMusic", { loop: true });
     this.mapMusic.play();
 
     if (this.carteDuNiveau) {
@@ -57,7 +55,6 @@ export class MapScene extends Phaser.Scene {
     } else {
       console.error("Erreur : Tileset non chargé");
     }*/
-
 
     // Chargement des calques
     this.calque_mort = this.carteDuNiveau.createLayer(
@@ -102,7 +99,7 @@ export class MapScene extends Phaser.Scene {
     }
 
     // Configurer les collisions pour le calque des plateformes
-    this.calque_plateformes.setCollisionByProperty({estSolide: true});
+    this.calque_plateformes.setCollisionByProperty({ estSolide: true });
     this.calque_echelle.setCollisionByProperty({ estEchelle: true }); // Ajouter collision pour les échelles
 
     // Définir les limites du monde physique
@@ -125,7 +122,7 @@ export class MapScene extends Phaser.Scene {
     }*/
 
     // Ajoute les sprites pour les 5 vies (exemple : sprites nommés life_5, life_4, ..., life_0)
-    this.lifeBar = this.add.sprite(16, 16, 'full').setOrigin(0, 0); // Position en haut à enemy_gauche
+    this.lifeBar = this.add.sprite(16, 16, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
 
@@ -147,11 +144,17 @@ export class MapScene extends Phaser.Scene {
 
     //liane
     console.log("Création des lianes");
-    this.vine = new Vine(this, 600, 3055, "vine", this.player, this.calque_plateformes);
+    this.vine = new Vine(
+      this,
+      600,
+      3055,
+      "vine",
+      this.player,
+      this.calque_plateformes
+    );
 
     console.log("Configuration des animations pour la vigne");
     this.vine.setupAnimations();
-
 
     if (this.vine) {
       console.log("Lianes créées avec succès", this.vine);
@@ -159,27 +162,45 @@ export class MapScene extends Phaser.Scene {
       console.error("Erreur : Lianes non créées");
     }
 
-    this.physics.add.overlap(this.player, this.enemy, this.playerIsHit, null, this);
-  //----------------------------------plante carnivors---------------------------
-  // Créer les animations pour la plante carnivore
-  this.anims.create({
-    key: 'idle',
-    frames: this.anims.generateFrameNumbers('carnivorous_plant_idle', { start: 0, end: 3 }),
-    frameRate: 4,
-    repeat: -1 // L'animation boucle indéfiniment
-  });
+    this.physics.add.overlap(
+      this.player,
+      this.enemy,
+      this.playerIsHit,
+      null,
+      this
+    );
+    //----------------------------------plante carnivors---------------------------
+    // Créer les animations pour la plante carnivore
+    this.anims.create({
+      key: "idle",
+      frames: this.anims.generateFrameNumbers("carnivorous_plant_idle", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 4,
+      repeat: -1, // L'animation boucle indéfiniment
+    });
 
-  this.anims.create({
-    key: 'attack',
-    frames: this.anims.generateFrameNumbers('carnivorous_plant_attack', { start: 0, end: 7 }),
-    frameRate: 10,
-    repeat: 0 // L'animation joue une seule fois
-  });
+    this.anims.create({
+      key: "attack",
+      frames: this.anims.generateFrameNumbers("carnivorous_plant_attack", {
+        start: 0,
+        end: 7,
+      }),
+      frameRate: 10,
+      repeat: 0, // L'animation joue une seule fois
+    });
 
-  // Exemple de création d'une instance de la plante carnivore
-  this.carnivorousPlant = new CarnivorousPlant(this, 900, 3040, this.player, this.platforms);
-  //-------------------------------------------------------------
-    
+    // Exemple de création d'une instance de la plante carnivore
+    this.carnivorousPlant = new CarnivorousPlant(
+      this,
+      900,
+      3040,
+      this.player,
+      this.platforms
+    );
+    //-------------------------------------------------------------
+
     // Ajoutez les collisions si nécessaire
     this.physics.add.collider(this.vine.sprite, this.calque_plateformes);
 
@@ -189,9 +210,15 @@ export class MapScene extends Phaser.Scene {
     // Ajouter les collisions
     this.physics.add.collider(this.player.player, this.calque_plateformes);
     this.physics.add.collider(this.enemy.enemy, this.calque_plateformes);
-    this.physics.add.overlap(this.player.player, this.calque_echelle, () => {
-      this.player.onScaleOverlap(this.calque_echelle); // Appeler la méthode dans Player.js
-    }, null, this);
+    this.physics.add.overlap(
+      this.player.player,
+      this.calque_echelle,
+      () => {
+        this.player.onScaleOverlap(this.calque_echelle); // Appeler la méthode dans Player.js
+      },
+      null,
+      this
+    );
     console.log("MapScene: create() terminé"); // Débogage : Fin de la méthode create
   }
 
@@ -215,25 +242,24 @@ export class MapScene extends Phaser.Scene {
     }
   }
 
-
   updateLifeDisplay() {
     // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
     const lifePoints = this.player.lifePoints;
 
     // Change l'image de la barre de vie selon les vies restantes
     if (lifePoints === 5) {
-      this.lifeBar.setTexture('full');
+      this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
-      this.lifeBar.setTexture('4hit');
+      this.lifeBar.setTexture("4hit");
     } else if (lifePoints === 3) {
-      this.lifeBar.setTexture('3hit');
+      this.lifeBar.setTexture("3hit");
     } else if (lifePoints === 2) {
-      this.lifeBar.setTexture('2hit');
+      this.lifeBar.setTexture("2hit");
     } else if (lifePoints === 1) {
-      this.lifeBar.setTexture('1hit');
+      this.lifeBar.setTexture("1hit");
     }
     this.carnivorousPlant.update();
     // Remets la gravité lorsque le joueur est au sol ou sur les plateformes
-      // Remet la gravité lorsque le joueur est au sol ou sur une plateforme
+    // Remet la gravité lorsque le joueur est au sol ou sur une plateforme
   }
 }

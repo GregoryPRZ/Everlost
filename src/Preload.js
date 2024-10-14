@@ -24,8 +24,6 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("2hit", "src/assets/hpbar2hit.png");
     this.load.image("1hit", "src/assets/hpbar1hit.png");
 
-
-
     this.load.tilemapTiledJSON("carte", "src/assets/map.json");
 
     // Spritesheets enemmis + players
@@ -35,14 +33,10 @@ export class PreloadScene extends Phaser.Scene {
     });
 
     //lianes
-    console.log("Début du chargement de la vigne");
     this.load.spritesheet("vine", "src/assets/ground_vine.png", {
       frameWidth: 16,
       frameHeight: 32,
     });
-    console.log("Image de la vigne chargée");
-
-    
 
     this.load.spritesheet("player_marche", "src/assets/player_walking.png", {
       frameWidth: 64,
@@ -74,20 +68,27 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 64,
     });
 
-  //----------------------------------------------------------------------------
-  // Charger l'image pour la plante en mode statique
- // Charger la spritesheet pour la plante en mode statique
- this.load.spritesheet('carnivorous_plant_idle', 'src/assets/carnivorous_plant.png', {
-  frameWidth: 32,
-  frameHeight: 64
-});
+    //----------------------------------------------------------------------------
+    // Charger l'image pour la plante en mode statique
+    // Charger la spritesheet pour la plante en mode statique
+    this.load.spritesheet(
+      "carnivorous_plant_idle",
+      "src/assets/carnivorous_plant.png",
+      {
+        frameWidth: 32,
+        frameHeight: 64,
+      }
+    );
 
-// Charger la spritesheet pour la plante en mode attaque
-this.load.spritesheet('carnivorous_plant_attack', 'src/assets/carnivorous_plant_attack.png', {
-  frameWidth: 32,
-  frameHeight: 64,
-});
-
+    // Charger la spritesheet pour la plante en mode attaque
+    this.load.spritesheet(
+      "carnivorous_plant_attack",
+      "src/assets/carnivorous_plant_attack.png",
+      {
+        frameWidth: 32,
+        frameHeight: 64,
+      }
+    );
   }
 
   create() {
@@ -99,7 +100,7 @@ this.load.spritesheet('carnivorous_plant_attack', 'src/assets/carnivorous_plant_
       frameRate: 10,
       repeat: -1,
     });
-    
+
     this.anims.create({
       key: "enemy_droite",
       frames: this.anims.generateFrameNumbers("enemi", { start: 5, end: 8 }),
