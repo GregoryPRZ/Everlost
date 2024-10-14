@@ -34,6 +34,16 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 48,
     });
 
+    //lianes
+    console.log("Début du chargement de la vigne");
+    this.load.spritesheet("vine", "src/assets/ground_vine.png", {
+      frameWidth: 16,
+      frameHeight: 32,
+    });
+    console.log("Image de la vigne chargée");
+
+    
+
     this.load.spritesheet("player_marche", "src/assets/player_walking.png", {
       frameWidth: 64,
       frameHeight: 64,
@@ -63,6 +73,21 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 64,
       frameHeight: 64,
     });
+
+  //----------------------------------------------------------------------------
+  // Charger l'image pour la plante en mode statique
+ // Charger la spritesheet pour la plante en mode statique
+ this.load.spritesheet('carnivorous_plant_idle', 'src/assets/carnivorous_plant.png', {
+  frameWidth: 32,
+  frameHeight: 64
+});
+
+// Charger la spritesheet pour la plante en mode attaque
+this.load.spritesheet('carnivorous_plant_attack', 'src/assets/carnivorous_plant_attack.png', {
+  frameWidth: 32,
+  frameHeight: 64,
+});
+
   }
 
   create() {

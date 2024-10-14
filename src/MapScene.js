@@ -1,5 +1,7 @@
 import { Player } from "./Player.js"; // Assurez-vous d'importer correctement votre classe
 import { Enemy } from "./enemy.js"; // Assurez-vous d'importer correctement votre classe
+import { Vine } from "./vine.js";
+import {CarnivorousPlant} from "./CarnivorousPlant.js";
 
 export class MapScene extends Phaser.Scene {
   constructor() {
@@ -24,7 +26,7 @@ export class MapScene extends Phaser.Scene {
   }
 
   create() {
-    console.log("MapScene: create() démarré"); // Débogage : Suivre l'initialisation
+    //console.log("MapScene: create() démarré"); // Débogage : Suivre l'initialisation
 
     // Chargement de la carte
     this.carteDuNiveau = this.add.tilemap("carte");
@@ -50,11 +52,11 @@ export class MapScene extends Phaser.Scene {
       "tuiles_de_jeu",
       "tuilesJeu"
     );
-    if (this.tileset) {
+    /*if (this.tileset) {
       console.log("Tileset chargé avec succès");
     } else {
       console.error("Erreur : Tileset non chargé");
-    }
+    }*/
 
 
     // Chargement des calques
@@ -116,11 +118,11 @@ export class MapScene extends Phaser.Scene {
       this.calque_plateformes
     );
 
-    if (this.player) {
+    /*if (this.player) {
       console.log("Joueur créé avec succès", this.player);
     } else {
       console.error("Erreur : Joueur non créé");
-    }
+    }*/
 
     // Ajoute les sprites pour les 5 vies (exemple : sprites nommés life_5, life_4, ..., life_0)
     this.lifeBar = this.add.sprite(16, 16, 'full').setOrigin(0, 0); // Position en haut à enemy_gauche
@@ -137,13 +139,49 @@ export class MapScene extends Phaser.Scene {
       this.calque_plateformes
     );
 
-    if (this.enemy) {
+    /*if (this.enemy) {
       console.log("Ennemi créé avec succès", this.enemy);
     } else {
       console.error("Erreur : Ennemi non créé");
+    }800, 1500*/
+
+    //liane
+    console.log("Création des lianes");
+    this.vine = new Vine(this, 600, 3055, "vine", this.player, this.calque_plateformes);
+
+    console.log("Configuration des animations pour la vigne");
+    this.vine.setupAnimations();
+
+
+    if (this.vine) {
+      console.log("Lianes créées avec succès", this.vine);
+    } else {
+      console.error("Erreur : Lianes non créées");
     }
 
     this.physics.add.overlap(this.player, this.enemy, this.playerIsHit, null, this);
+  //----------------------------------plante carnivors---------------------------
+  // Créer les animations pour la plante carnivore
+  this.anims.create({
+    key: 'idle',
+    frames: this.anims.generateFrameNumbers('carnivorous_plant_idle', { start: 0, end: 3 }),
+    frameRate: 4,
+    repeat: -1 // L'animation boucle indéfiniment
+  });
+
+  this.anims.create({
+    key: 'attack',
+    frames: this.anims.generateFrameNumbers('carnivorous_plant_attack', { start: 0, end: 7 }),
+    frameRate: 10,
+    repeat: 0 // L'animation joue une seule fois
+  });
+
+  // Exemple de création d'une instance de la plante carnivore
+  this.carnivorousPlant = new CarnivorousPlant(this, 900, 3040, this.player, this.platforms);
+  //-------------------------------------------------------------
+    
+    // Ajoutez les collisions si nécessaire
+    this.physics.add.collider(this.vine.sprite, this.calque_plateformes);
 
     // Suivre le joueur avec la caméra
     this.cameras.main.startFollow(this.player.player);
@@ -159,12 +197,12 @@ export class MapScene extends Phaser.Scene {
   update() {
     if (this.player) {
       this.player.update();
-      console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
+      //console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
     }
 
     if (this.enemy) {
       this.enemy.update();
-      console.log("Enemy update appelé"); // Débogage : Suivre les mises à jour de l'ennemi
+      //console.log("Enemy update appelé"); // Débogage : Suivre les mises à jour de l'ennemi
     }
 
     // Mise à jour du joueur
@@ -193,5 +231,6 @@ export class MapScene extends Phaser.Scene {
     } else if (lifePoints === 1) {
       this.lifeBar.setTexture('1hit');
     }
+    this.carnivorousPlant.update();
   }
 }
