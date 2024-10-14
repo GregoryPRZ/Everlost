@@ -28,6 +28,7 @@ export class Scenario extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Start
     startButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("MapScene"); // Remplace 'Controle' par le nom de ta scène de contrôle
     });
 

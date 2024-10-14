@@ -24,6 +24,7 @@ export class SceneMenu extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Start
     startButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("Controle"); // Lance la scène du scénario
     });
 
@@ -58,6 +59,7 @@ export class SceneMenu extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Controls
     controlsButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("Controle"); // Lance la scène des contrôles
     });
 
@@ -92,6 +94,7 @@ export class SceneMenu extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Credits
     creditsButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("Credits"); // Lance la scène des crédits
     });
 

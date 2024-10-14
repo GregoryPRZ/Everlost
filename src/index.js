@@ -9,6 +9,7 @@ import { Scenario } from "./scenario.js";
 import { Controle } from "./controle.js";
 import { MapScene } from "./MapScene.js";
 import { PreloadScene } from "./Preload.js";
+import { Credits } from "./credits.js";
 
 // configuration générale du jeu
 var config = {
@@ -26,7 +27,7 @@ var config = {
       debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
-  scene: [PreloadScene, SceneMenu, Scenario, Controle, MapScene],
+  scene: [PreloadScene, SceneMenu, Scenario, Controle, Credits, MapScene],
 
   scale: {
     mode: Phaser.Scale.FIT,

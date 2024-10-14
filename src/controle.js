@@ -28,6 +28,7 @@ export class Controle extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Start
     startButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("Scenario"); // Remplace 'SceneMenu' par le nom de ta scène précédente
     });
 
@@ -62,6 +63,7 @@ export class Controle extends Phaser.Scene {
 
     // Ajouter un événement au clic sur le bouton Retour
     retourButton.on("pointerdown", () => {
+      this.sound.play('buttonClick'); // Joue le son
       this.scene.start("SceneMenu"); // Lance la scène du menu
     });
 
