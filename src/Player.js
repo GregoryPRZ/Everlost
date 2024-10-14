@@ -284,9 +284,4 @@ export class Player {
       this.player.setGravityY(300); // Réactive la gravité lorsque le joueur n'est pas sur l'échelle
     }
   }
-  update(){
-    if (!this.player.body.touching.none && !this.player.body.touching.down) {
-      this.player.setGravityY(300); // Ajustez selon la gravité de votre jeu
-    }
-  }   
 }
