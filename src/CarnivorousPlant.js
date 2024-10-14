@@ -1,95 +1,58 @@
 export class CarnivorousPlant {
-    constructor(scene, x, y, texture, player, platforms) {
+    constructor(scene, x, y, player, platforms) {
       this.scene = scene;
       this.player = player;
-      this.health = 3; // Points de vie
-      this.speed = 0; // Statique, pas de déplacement
-      this.damage = 1; // Dégâts infligés au joueur
-  
-      // Création du sprite de la plante carnivore
-      this.sprite = this.scene.physics.add.sprite(x, y, texture);
-      this.sprite.setCollideWorldBounds(true);
-      this.sprite.body.setAllowGravity(false); // Pas d'effet de gravité pour une plante
-  
-      // Ajouter des collisions
-      this.scene.physics.add.collider(this.sprite, platforms);
-  
-      // Détection de la proximité du joueur
-      this.scene.physics.add.overlap(this.player.player, this.sprite, this.onPlayerApproach, null, this);
-  
-      // Comportement lorsque la plante mord le joueur
+      this.platforms = platforms;
       this.isAttacking = false;
   
-      // Animation de la plante (à configurer dans la scène si nécessaire)
-      this.setupAnimations();
+      // Ajouter le sprite avec l'animation statique par défaut
+      this.sprite = this.scene.physics.add.sprite(x, y, 'carnivorous_plant_idle');
+      this.sprite.setImmovable(true);
+      this.sprite.body.allowGravity = false;
+  
+      // Démarrer l'animation idle au début
+      this.sprite.play('idle');
+  
+      // Définir les propriétés
+      this.health = 3;
+  
+      // Ajouter un détecteur de proximité
+      this.proximitySensor = this.scene.add.circle(x, y, 100);
+      this.scene.physics.add.existing(this.proximitySensor);
+      this.proximitySensor.body.setCircle(100);
+      this.proximitySensor.body.setAllowGravity(false);
+      this.proximitySensor.body.setImmovable(true);
+  
+      // Vérifier les collisions avec le joueur
+      this.scene.physics.add.overlap(this.proximitySensor, this.player, this.startAttack, null, this);
     }
   
-    setupAnimations() {
-      this.scene.anims.create({
-        key: 'emerge',
-        frames: this.scene.anims.generateFrameNumbers('carnivorous_plant', { start: 0, end: 3 }),
-        frameRate: 6,
-        repeat: 0 // L'animation se joue une seule fois
-      });
-  
-      this.scene.anims.create({
-        key: 'attack',
-        frames: this.scene.anims.generateFrameNumbers('carnivorous_plant', { start: 4, end: 7 }),
-        frameRate: 6,
-        repeat: -1 // L'animation se joue en boucle pendant l'attaque
-      });
-  
-      this.scene.anims.create({
-        key: 'idle',
-        frames: this.scene.anims.generateFrameNumbers('carnivorous_plant', { start: 8, end: 8 }),
-        frameRate: 1,
-        repeat: -1
-      });
-    }
-  
-    onPlayerApproach(player, plant) {
+    startAttack() {
       if (!this.isAttacking) {
         this.isAttacking = true;
-        this.sprite.play('emerge');
+        
+        // Jouer l'animation d'attaque
+        this.sprite.play('attack');
+        
+        // Code pour infliger des dégâts au joueur
+        this.player.takeDamage(1);
   
-        // Déplacer la plante vers le joueur (ou changer son état pour mordre)
-        this.scene.time.delayedCall(1000, () => {
-          this.sprite.play('attack');
-          this.attackPlayer(player);
-        });
+        // Ajouter un délai pour revenir à l'animation statique après l'attaque
+        this.scene.time.delayedCall(1000, this.stopAttack, [], this);
       }
     }
   
-    attackPlayer(player) {
-      if (this.health > 0) {
-        // Réduire la santé du joueur si la plante mord
-        console.log("La plante carnivore attaque !");
-        player.takeDamage(this.damage); // Supposons que la classe Player ait une méthode takeDamage()
-      }
-    }
-  
-    takeDamage(amount) {
-      this.health -= amount;
-      if (this.health <= 0) {
-        this.die();
-      }
-    }
-  
-    die() {
-      // Supprimer le sprite de la plante du jeu
-      this.sprite.destroy();
-      console.log("La plante carnivore a été détruite.");
+    stopAttack() {
+      this.isAttacking = false;
+      this.sprite.play('idle'); // Revenir à l'animation statique
     }
   
     update() {
-      // Gestion de l'état et de l'animation
-      if (this.health <= 0) {
-        return;
-      }
-  
-      if (!this.isAttacking) {
-        this.sprite.play('idle', true);
+      // Vérifier la distance avec le joueur
+      const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, this.player.x, this.player.y);
+      if (distance < 100) {
+        this.startAttack();
       }
     }
   }
-  
+    
