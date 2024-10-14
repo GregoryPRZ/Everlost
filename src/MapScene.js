@@ -1,6 +1,7 @@
 import { Player } from "./Player.js"; // Assurez-vous d'importer correctement votre classe
 import { Enemy } from "./enemy.js"; // Assurez-vous d'importer correctement votre classe
 import { Vine } from "./vine.js";
+import { Crow } from "./Crow.js";
 import { CarnivorousPlant } from "./CarnivorousPlant.js";
 
 export class MapScene extends Phaser.Scene {
@@ -200,6 +201,25 @@ export class MapScene extends Phaser.Scene {
       this.platforms
     );
     //-------------------------------------------------------------
+    //-----------------------------corbeau--------------------------------
+    // Créer les animations pour le corbeau
+    this.anims.create({
+      key: 'fly',
+      frames: this.anims.generateFrameNumbers('crow_fly', { start: 0, end: 3 }),
+      frameRate: 6,
+      repeat: -1 // Boucle infinie pour l'animation de vol
+    });
+
+    this.anims.create({
+      key: 'dive',
+      frames: this.anims.generateFrameNumbers('crow_dive', { start: 0, end: 2 }),
+      frameRate: 10,
+      repeat: 0 // Joue une seule fois pour l'attaque
+    });
+
+    // Exemple de création d'une instance du corbeau
+    this.crow = new Crow(this, 500, 2900, this.player);
+    //----------------------------------------------------------------------
 
     // Ajoutez les collisions si nécessaire
     this.physics.add.collider(this.vine.sprite, this.calque_plateformes);

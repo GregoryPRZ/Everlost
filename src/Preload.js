@@ -89,6 +89,20 @@ export class PreloadScene extends Phaser.Scene {
         frameHeight: 64,
       }
     );
+
+    // Charger la spritesheet pour le vol du corbeau
+    this.load.spritesheet('crow_fly', 'src/assets/crow_move.png', {
+      frameWidth: 64,
+      frameHeight: 64
+    });
+
+    // Charger la spritesheet pour l'attaque en piqué du corbeau
+    this.load.spritesheet('crow_dive', 'src/assets/crow_attack.png', {
+      frameWidth: 64,
+      frameHeight: 64
+    });
+
+
   }
 
   create() {
