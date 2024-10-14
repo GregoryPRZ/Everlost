@@ -262,14 +262,31 @@ export class Player {
     }
   }
 
-  onScaleOverlap(player, calque_echelle) {
-    // Vérifier si la touche de montée est pressée (par exemple, la touche "Haut" ou "Espace")
-    if (this.clavier.up.isDown) {
-      // Déplace le joueur vers le haut sur l'échelle
-      player.setVelocityY(-200); // Ajustez la vitesse de montée selon vos besoins
+  onScaleOverlap(calque_echelle) {
+    // Obtenir la tuile en dessous du joueur
+    const tile = calque_echelle.getTileAtWorldXY(this.player.x, this.player.y);
+  
+    // Vérifier si la tuile a la propriété "estEchelle"
+    if (tile && tile.properties.estEchelle) {
+      // Si la tuile est une échelle, autoriser le mouvement vertical
+      if (this.clavier.up.isDown) {
+        this.player.setVelocityY(-150); // Monter
+        this.player.setGravityY(0); // Désactiver la gravité
+      } else if (this.clavier.down.isDown) {
+        this.player.setVelocityY(150); // Descendre
+        this.player.setGravityY(0); // Désactiver la gravité
+      } else {
+        this.player.setVelocityY(0); // Arrêter le mouvement vertical
+        this.player.setGravityY(0); // Toujours désactiver la gravité sur l'échelle
+      }
     } else {
-      // Si le joueur ne monte pas, on le laisse tomber
-      player.setVelocityY(0); // Arrêtez le mouvement vertical quand le joueur ne monte pas
+      // Sinon, réactiver la gravité
+      this.player.setGravityY(300); // Réactive la gravité lorsque le joueur n'est pas sur l'échelle
     }
   }
+  update(){
+    if (!this.player.body.touching.none && !this.player.body.touching.down) {
+      this.player.setGravityY(300); // Ajustez selon la gravité de votre jeu
+    }
+  }   
 }
