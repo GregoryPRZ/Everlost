@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.2" name="tuiles_de_jeu" tilewidth="32" tileheight="32" tilecount="256" columns="8">
+<tileset version="1.10" tiledversion="1.11.0" name="tuiles_de_jeu" tilewidth="32" tileheight="32" tilecount="256" columns="8">
  <image source="tuilesJeu.png" width="256" height="1024"/>
+ <tile id="0">
+  <properties>
+   <property name="estSolide" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="1">
+  <properties>
+   <property name="estSolide" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="2">
+  <properties>
+   <property name="estSolide" type="bool" value="true"/>
+  </properties>
+ </tile>
  <tile id="3">
   <properties>
    <property name="estSolide" type="bool" value="false"/>
@@ -104,6 +119,11 @@
  <tile id="23">
   <properties>
    <property name="estSolide" type="bool" value="false"/>
+  </properties>
+ </tile>
+ <tile id="24">
+  <properties>
+   <property name="estSolide" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="25">
@@ -219,76 +239,6 @@
  <tile id="47">
   <properties>
    <property name="estSolide" type="bool" value="false"/>
-  </properties>
- </tile>
- <tile id="49">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="50">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="51">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="52">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="53">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="65">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="66">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="67">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="85">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="86">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="87">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="93">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="94">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
-  </properties>
- </tile>
- <tile id="95">
-  <properties>
-   <property name="estSolide" type="bool" value="true"/>
   </properties>
  </tile>
 </tileset>
