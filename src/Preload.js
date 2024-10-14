@@ -66,5 +66,19 @@ export class PreloadScene extends Phaser.Scene {
 
   create() {
     this.scene.start("SceneMenu");
+    //---------------------------------------
+    this.anims.create({
+      key: "enemy_gauche",
+      frames: this.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    
+    this.anims.create({
+      key: "enemy_droite",
+      frames: this.anims.generateFrameNumbers("enemi", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
   }
 }

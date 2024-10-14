@@ -84,26 +84,27 @@ export class Enemy {
   }
 
   // Déplacement de l'ennemi
-  move() {
-    // Vérifie si l'ennemi atteint la limite gauche ou droite
-    if (this.enemy.x <= this.leftLimit) {
-      this.direction = 1; // Change la direction à droite
-    } else if (this.enemy.x >= this.rightLimit) {
-      this.direction = -1; // Change la direction à gauche
-    }
-
-    // Déplacement de l'ennemi
-    this.enemy.setVelocityX(this.speed * this.direction);
-
-    // Animation et inversion de l'échelle selon la direction
-    if (this.direction === 1) {
-      this.enemy.play("enemy_droite", true); // Joue l'animation pour aller à droite
-      this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
-    } else {
-      this.enemy.play("enemy_gauche", true); //
-      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
-    }
+ // Déplacement de l'ennemi
+move() {
+  // Vérifie si l'ennemi atteint la limite gauche ou droite
+  if (this.enemy.x <= this.leftLimit) {
+    this.direction = 1; // Change la direction à droite
+  } else if (this.enemy.x >= this.rightLimit) {
+    this.direction = -1; // Change la direction à gauche
   }
+
+  // Déplacement de l'ennemi
+  this.enemy.setVelocityX(this.speed * this.direction);
+
+  // Animation et inversion de l'échelle selon la direction
+  if (this.direction === 1) {
+      this.enemy.play('enemy_droite', true);  // Joue l'animation pour aller à droite
+      this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
+  } else {
+      this.enemy.play('enemy_gauche', true);  // Joue l'animation pour aller à gauche
+      this.enemy.setFlipX(false); // Inverse l'échelle pour aller à gauche
+  }
+}
 
   // Diminuer les points de vie de l'ennemi
   decreaseHealthPoints() {
