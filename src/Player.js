@@ -31,6 +31,8 @@ export class Player {
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
     this.canDash = true; // Contrôle du dash
 
+    this.lifePoints = 5; // Par exemple 5 vies
+
     // Initialisation des animations
     this.Animations();
   }
@@ -245,6 +247,14 @@ export class Player {
       this.scene.time.delayedCall(this.dashCooldown, () => {
         this.canDash = true; // Réactiver le dash après le cooldown
       });
+    }
+  }
+
+  decreaseLife() {
+    this.lifePoints--;
+    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints <= 0) {
+      this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
     }
   }
 }

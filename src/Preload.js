@@ -24,6 +24,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("bloc4", "src/assets/bloc4.png");
     this.load.image("bloc5", "src/assets/bloc5.png");
 
+    this.load.image("full", "src/assets/hpbarfull.png");
+    this.load.image("4hit", "src/assets/hpbar4hit.png");
+    this.load.image("3hit", "src/assets/hpbar3hit.png");
+    this.load.image("2hit", "src/assets/hpbar2hit.png");
+    this.load.image("1hit", "src/assets/hpbar1hit.png");
+
     // Fichier JSON de la carte
     this.load.tilemapTiledJSON("carte", "src/assets/map1.json");
 
@@ -54,7 +60,7 @@ export class PreloadScene extends Phaser.Scene {
     });
 
     this.load.spritesheet("player_attack", "src/assets/player_attack.png", {
-      frameWidth: 64,
+      frameWidth: 96,
       frameHeight: 64,
     });
 

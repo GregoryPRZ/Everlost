@@ -78,6 +78,11 @@ export class MapScene extends Phaser.Scene {
       console.error("Erreur : Joueur non créé");
     }
 
+    // Ajoute les sprites pour les 5 vies (exemple : sprites nommés life_5, life_4, ..., life_0)
+    this.lifeBar = this.add.sprite(16, 16, 'full').setOrigin(0, 0); // Position en haut à enemy_gauche
+    this.lifeBar.setScale(2);
+    this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
+
     // Créer l'ennemi
     this.enemy = new Enemy(
       this,
@@ -93,6 +98,8 @@ export class MapScene extends Phaser.Scene {
     } else {
       console.error("Erreur : Ennemi non créé");
     }
+
+    this.physics.add.overlap(this.player, this.enemy, this.playerIsHit, null, this);
 
     // Suivre le joueur avec la caméra
     this.cameras.main.startFollow(this.player.player);
@@ -113,6 +120,33 @@ export class MapScene extends Phaser.Scene {
     if (this.enemy) {
       this.enemy.update();
       console.log("Enemy update appelé"); // Débogage : Suivre les mises à jour de l'ennemi
+    }
+
+    // Mise à jour du joueur
+    this.player.update();
+
+    // Exemple de condition de perte de vie
+    if (this.playerIsHit) {
+      this.player.decreaseLife(); // Enlève une vie
+    }
+  }
+
+
+  updateLifeDisplay() {
+    // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
+    const lifePoints = this.player.lifePoints;
+
+    // Change l'image de la barre de vie selon les vies restantes
+    if (lifePoints === 5) {
+      this.lifeBar.setTexture('full');
+    } else if (lifePoints === 4) {
+      this.lifeBar.setTexture('4hit');
+    } else if (lifePoints === 3) {
+      this.lifeBar.setTexture('3hit');
+    } else if (lifePoints === 2) {
+      this.lifeBar.setTexture('2hit');
+    } else if (lifePoints === 1) {
+      this.lifeBar.setTexture('1hit');
     }
   }
 }
