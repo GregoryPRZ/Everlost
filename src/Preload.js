@@ -33,6 +33,16 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 48,
     });
 
+    //lianes
+    console.log("Début du chargement de la vigne");
+    this.load.spritesheet("vine", "src/assets/ground_vine.png", {
+      frameWidth: 16,
+      frameHeight: 32,
+    });
+    console.log("Image de la vigne chargée");
+
+    
+
     this.load.spritesheet("player_marche", "src/assets/player_walking.png", {
       frameWidth: 64,
       frameHeight: 64,
