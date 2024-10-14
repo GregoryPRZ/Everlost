@@ -31,6 +31,8 @@ export class Player {
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
     this.canDash = true; // Contrôle du dash
 
+    this.lifePoints = 5; // Par exemple 5 vies
+
     // Initialisation des animations
     this.Animations();
   }
@@ -107,7 +109,7 @@ export class Player {
       key: "anim_attaque",
       frames: this.scene.anims.generateFrameNumbers("player_attack", {
         start: 0,
-        end: 6,
+        end: 5,
       }),
       frameRate: 10,
       repeat: 0,
@@ -130,6 +132,7 @@ export class Player {
     if (Phaser.Input.Keyboard.JustDown(this.attack)) {
       // Lancer l'animation d'attaque
       this.player.anims.play("anim_attaque", true);
+      this.scene.sound.play('attackSound'); // Jouer le son d'attaque
 
       // Vérifier dans quelle direction le joueur est orienté (gauche ou droite)
       if (this.player.flipX) {
@@ -219,6 +222,7 @@ export class Player {
         this.player.setVelocityY(-330);
         this.nbSaut++;
         this.player.anims.play("anim_saut", true);
+        this.scene.sound.play('jumpSound'); // Jouer le son de saut
       } else if (this.nbSaut === 1 && this.doubleSaut) {
         // Double saut
         this.player.setVelocityY(-330);
@@ -227,6 +231,7 @@ export class Player {
         this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
         this.doubleSaut = false;
         this.player.anims.play("anim_saut", true);
+        this.scene.sound.play('jumpSound'); // Jouer le son de saut
       }
     }
   }
@@ -241,10 +246,30 @@ export class Player {
       });
     } else if (this.keyX.isDown && this.canDash) {
       this.isDashing = true;
+      this.scene.sound.play('dashSound'); // Jouer le son de saut
       this.canDash = false;
       this.scene.time.delayedCall(this.dashCooldown, () => {
         this.canDash = true; // Réactiver le dash après le cooldown
       });
+    }
+  }
+
+  decreaseLife() {
+    this.lifePoints--;
+    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints <= 0) {
+      this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
+    }
+  }
+
+  onScaleOverlap(player, calque_echelle) {
+    // Vérifier si la touche de montée est pressée (par exemple, la touche "Haut" ou "Espace")
+    if (this.clavier.up.isDown) {
+      // Déplace le joueur vers le haut sur l'échelle
+      player.setVelocityY(-200); // Ajustez la vitesse de montée selon vos besoins
+    } else {
+      // Si le joueur ne monte pas, on le laisse tomber
+      player.setVelocityY(0); // Arrêtez le mouvement vertical quand le joueur ne monte pas
     }
   }
 }

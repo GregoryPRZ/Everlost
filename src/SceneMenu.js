@@ -2,6 +2,9 @@ export class SceneMenu extends Phaser.Scene {
   constructor() {
     super({ key: "SceneMenu" }); // Clé de la scène pour l'identifier
   }
+  preload(){
+    this.load.audio('titleMusic', 'src/assets/sounds/bgm_titlescreen.mp3'); // Remplacez par le chemin de votre son
+  }
 
   create() {
     // Ajouter l'image d'accueil
@@ -10,7 +13,9 @@ export class SceneMenu extends Phaser.Scene {
       this.cameras.main.centerY,
       "accueil"
     );
-
+    // Jouer la musique du titre
+    this.titleMusic = this.sound.add('titleMusic', { loop: true });
+    this.titleMusic.play();
     // Créer le bouton Start
     const startButton = this.add
       .image(this.cameras.main.centerX, this.cameras.main.centerY - 50, "start")
