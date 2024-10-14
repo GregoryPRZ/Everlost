@@ -189,8 +189,9 @@ export class MapScene extends Phaser.Scene {
     // Ajouter les collisions
     this.physics.add.collider(this.player.player, this.calque_plateformes);
     this.physics.add.collider(this.enemy.enemy, this.calque_plateformes);
-    this.physics.add.overlap(this.player.player, this.calque_echelle, this.onScaleOverlap, null, this); // Détection de chevaucheme
-
+    this.physics.add.overlap(this.player.player, this.calque_echelle, () => {
+      this.player.onScaleOverlap(this.calque_echelle); // Appeler la méthode dans Player.js
+    }, null, this);
     console.log("MapScene: create() terminé"); // Débogage : Fin de la méthode create
   }
 
@@ -232,5 +233,7 @@ export class MapScene extends Phaser.Scene {
       this.lifeBar.setTexture('1hit');
     }
     this.carnivorousPlant.update();
+    // Remets la gravité lorsque le joueur est au sol ou sur les plateformes
+      // Remet la gravité lorsque le joueur est au sol ou sur une plateforme
   }
 }
