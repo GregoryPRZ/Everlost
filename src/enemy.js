@@ -7,7 +7,6 @@ export class Enemy {
     this.enemy.setCollideWorldBounds(true);
     this.enemy.setGravityY(300);
 
-    
     // Collision avec le calque de plateformes
     this.scene.physics.add.collider(
       this.enemy,
@@ -133,6 +132,4 @@ export class Enemy {
         this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
     });
   }
-
-
 }
