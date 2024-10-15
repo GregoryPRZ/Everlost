@@ -12,6 +12,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("credit", "src/assets/Crédits.png");
     this.load.image("credits", "src/assets/credits.png");
     this.load.image("scenario", "src/assets/scenario.png");
+    this.load.image("gameover", "src/assets/gameOver.png");
     this.load.image("start", "src/assets/Start.png");
     this.load.image("retour", "src/assets/retour.png");
 

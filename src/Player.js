@@ -68,7 +68,8 @@ die() {
         this.player.setVisible(false); // Rendre le joueur invisible
         this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
         this.player = null; // Assurez-vous que this.player est null
-        this.scene.scene.start("SceneMenu"); // Rediriger vers le menu
+        this.scene.scene.get("MapScene").mapMusic.stop();
+        this.scene.scene.start("GameOver"); // Rediriger vers le menu
     }
 }
 

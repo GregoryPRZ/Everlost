@@ -7,6 +7,7 @@
 import { SceneMenu } from "./SceneMenu.js";
 import { Scenario } from "./scenario.js";
 import { Controle } from "./controle.js";
+import { GameOver } from "./GameOver.js";
 import { MapScene } from "./MapScene.js";
 import { PreloadScene } from "./Preload.js";
 import { Credits } from "./credits.js";
@@ -27,7 +28,7 @@ var config = {
       debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
-  scene: [PreloadScene, SceneMenu, Scenario, Controle, Credits, MapScene],
+  scene: [PreloadScene, SceneMenu, Scenario, Controle, Credits, MapScene, GameOver],
 
   scale: {
     mode: Phaser.Scale.FIT,
