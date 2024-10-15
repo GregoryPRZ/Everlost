@@ -235,12 +235,12 @@ export class MapScene extends Phaser.Scene {
       this.player.blinkRed();
     }, null, this);
     //-------------------------------------------------------------
-    //-----------------------------corbeau--------------------------------
+//-----------------------------corbeau-------------------------------------------------------------------------------
     // Créer les animations pour le corbeau
     this.anims.create({
       key: 'fly',
       frames: this.anims.generateFrameNumbers('crow_fly', { start: 0, end: 3 }),
-      frameRate: 6,
+      frameRate: 10,
       repeat: -1 // Boucle infinie pour l'animation de vol
     });
 
@@ -251,8 +251,8 @@ export class MapScene extends Phaser.Scene {
       repeat: 0 // Joue une seule fois pour l'attaque
     });
 
-    // Exemple de création d'une instance du corbeau
-    this.crow = new Crow(this, 500, 5900, this.player);
+    //instance du corbeau
+    this.crow = new Crow(this, 800, 5800, this.player);
     //----------------------------------------------------------------------
 
     // Ajoutez les collisions si nécessaire
@@ -299,6 +299,11 @@ export class MapScene extends Phaser.Scene {
     if (this.carnivorousPlant) {
       this.carnivorousPlant.update();
     }
+
+    //if (this.crow) {
+      this.crow.update();
+    //}
+
     
   }
 
@@ -318,7 +323,7 @@ export class MapScene extends Phaser.Scene {
     } else if (lifePoints === 1) {
       this.lifeBar.setTexture("4hit");
     }
-    this.carnivorousPlant.update();
+    //this.carnivorousPlant.update();
     // Remets la gravité lorsque le joueur est au sol ou sur les plateformes
     // Remet la gravité lorsque le joueur est au sol ou sur une plateforme
   }

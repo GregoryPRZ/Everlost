@@ -93,6 +93,7 @@ export class PreloadScene extends Phaser.Scene {
       }
     );
 
+//----------------------------------------------------------------------------------
     // Charger la spritesheet pour le vol du corbeau
     this.load.spritesheet('crow_fly', 'src/assets/crow_move.png', {
       frameWidth: 64,
@@ -105,7 +106,7 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 64
     });
 
-    // Charger la texture de la balle
+//------------------------- Charger la texture de la balle ----------------------------
     this.load.image("bullet_texture", "src/assets/Bullet.png");
 
 
