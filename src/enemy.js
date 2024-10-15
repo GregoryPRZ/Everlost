@@ -105,6 +105,7 @@ export class Enemy {
   // Fonction pour faire tirer l'ennemi
   shoot() {
     console.log("L'ennemi tire !");
+    this.scene.sound.play('poisonSound'); // Jouer le son de saut
     const bullet = this.scene.physics.add.sprite(this.enemy.x + 10, this.enemy.y, "bullet_texture");
     bullet.setVelocityX(this.direction * 300); // Le tir va dans la direction de l'ennemi
     // Collision entre la balle et le joueur
