@@ -1,8 +1,8 @@
-import { Player } from "./Player.js"; // Assurez-vous d'importer correctement votre classe
-import { Enemy } from "./enemy.js"; // Assurez-vous d'importer correctement votre classe
+import { Enemy } from "./enemy.js";
 import { Vine } from "./vine.js";
 import { Crow } from "./Crow.js";
 import { CarnivorousPlant } from "./CarnivorousPlant.js";
+import { Player } from "./Player.js"; 
 
 export class MapScene extends Phaser.Scene {
   constructor() {
@@ -110,7 +110,7 @@ export class MapScene extends Phaser.Scene {
     // Créer le joueur
     this.player = new Player(
       this,
-      50,
+      800,
       5900,
       "img_perso",
       this.calque_plateformes
@@ -130,13 +130,25 @@ export class MapScene extends Phaser.Scene {
     // Créer l'ennemi
     this.enemy = new Enemy(
       this,
-      600,
-      500,
+      880,
+      5900,
       "enemi",
       this.player,
       this.calque_plateformes
     );
+    this.anims.create({
+      key: "enemy_gauche",
+      frames: this.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
 
+    this.anims.create({
+      key: "enemy_droite",
+      frames: this.anims.generateFrameNumbers("enemi", { start: 4, end: 7 }),
+      frameRate: 10,
+      repeat: -1,
+    });
     /*if (this.enemy) {
       console.log("Ennemi créé avec succès", this.enemy);
     } else {
@@ -147,8 +159,8 @@ export class MapScene extends Phaser.Scene {
     console.log("Création des lianes");
     this.vine = new Vine(
       this,
-      600,
-      3055,
+      400,
+      5940,
       "vine",
       this.player,
       this.calque_plateformes
@@ -192,11 +204,11 @@ export class MapScene extends Phaser.Scene {
       repeat: 0, // L'animation joue une seule fois
     });
 
-    // Exemple de création d'une instance de la plante carnivore
+    // instance de la plante carnivore
     this.carnivorousPlant = new CarnivorousPlant(
       this,
       900,
-      3040,
+      5920,
       this.player,
       this.platforms
     );
@@ -218,7 +230,7 @@ export class MapScene extends Phaser.Scene {
     });
 
     // Exemple de création d'une instance du corbeau
-    this.crow = new Crow(this, 500, 2900, this.player);
+    this.crow = new Crow(this, 500, 5900, this.player);
     //----------------------------------------------------------------------
 
     // Ajoutez les collisions si nécessaire
