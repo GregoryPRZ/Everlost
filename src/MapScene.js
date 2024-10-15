@@ -20,6 +20,7 @@ export class MapScene extends Phaser.Scene {
   preload() {
     // Charger les sons
     this.load.audio("jumpSound", "src/assets/sounds/se_jump.mp3");
+    this.load.audio("poisonSound", "src/assets/sounds/se_poison.mp3");
     this.load.audio("dashSound", "src/assets/sounds/se_dash.mp3");
     this.load.audio("attackSound", "src/assets/sounds/se_sword.mp3");
     this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
