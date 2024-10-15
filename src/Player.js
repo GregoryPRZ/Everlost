@@ -5,6 +5,8 @@ export class Player {
     this.player.setCollideWorldBounds(true);
     this.player.setBounce(0);
     this.player.flipX = false;
+    this.isInvincible = false; // Variable pour gérer l'invincibilité temporaire après un coup
+    this.blinkTimer = null; // Stocker le timer de clignotement
 
     this.scene.physics.add.collider(this.player, calque_plateformes);
     this.scene.physics.add.collider(this.player, platforms);
@@ -36,6 +38,44 @@ export class Player {
     // Initialisation des animations
     this.Animations();
   }
+//---------------------------------------------------------------------------------
+// Fonction pour faire clignoter le joueur et réduire les points de vie
+takeDamage() {
+  if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
+
+  this.lifePoints--; // Réduit la vie du joueur
+  this.isInvincible = true; // Rend le joueur temporairement invincible
+
+  // Appel à la fonction blinkRed pour clignoter en rouge
+  this.blinkRed();
+
+  // Remettre le joueur visible et stopper l'invincibilité après un certain temps
+  this.scene.time.delayedCall(1000, () => {
+      this.isInvincible = false;
+      this.player.clearTint(); // Retirer la teinte rouge
+  }, [], this);
+}
+
+// Fonction pour faire clignoter le joueur en rouge
+blinkRed() {
+  this.player.setTint(0xff0000); // Applique une teinte rouge
+
+  // Utiliser un tween pour gérer le clignotement
+  this.scene.tweens.add({
+      targets: this.player,
+      alpha: 0, // Faire disparaître le joueur (invisible)
+      ease: 'Cubic.easeOut',
+      duration: 100, // Durée d'une phase de clignotement
+      repeat: 5, // Répéter 5 fois
+      yoyo: true, // Alterner entre visible et invisible
+      onComplete: () => {
+          this.player.clearTint(); // Retirer la teinte rouge une fois terminé
+      }
+  });
+}
+
+
+//---------------------------------------------------------------------------------
 
   Animations() {
     // Animation droite

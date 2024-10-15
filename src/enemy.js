@@ -112,6 +112,7 @@ export class Enemy {
       console.log("Le joueur est touché !");
       bullet.destroy(); // Détruit la balle lorsqu'elle touche le joueur
       // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
+      this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
   });
   }
 
