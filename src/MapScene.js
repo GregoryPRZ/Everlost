@@ -111,7 +111,7 @@ export class MapScene extends Phaser.Scene {
     // Créer le joueur
     this.player = new Player(
       this,
-      800,
+      50,
       5900,
       "img_perso",
       this.calque_plateformes
@@ -166,6 +166,18 @@ export class MapScene extends Phaser.Scene {
       this.player,
       this.calque_plateformes
     );
+
+        // Détecter la collision entre le joueur et la vigne
+    this.physics.add.overlap(this.player.player, this.vine.sprite, () => {
+      // Appelle la méthode takeDamage lorsque le joueur touche la vigne
+      this.player.takeDamage();
+      
+      // Faire clignoter le joueur
+      this.player.blinkRed();
+    }, null, this);
+
+    
+
 
     console.log("Configuration des animations pour la vigne");
     this.vine.setupAnimations();
@@ -254,6 +266,7 @@ export class MapScene extends Phaser.Scene {
     );
     console.log("MapScene: create() terminé"); // Débogage : Fin de la méthode create
   }
+  
 
   update() {
     if (this.player) {
@@ -273,6 +286,11 @@ export class MapScene extends Phaser.Scene {
     if (this.playerIsHit) {
       this.player.decreaseLife(); // Enlève une vie
     }
+
+    if (this.carnivorousPlant) {
+      this.carnivorousPlant.update();
+    }
+    
   }
 
   updateLifeDisplay() {

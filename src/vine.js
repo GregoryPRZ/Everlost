@@ -3,6 +3,7 @@ export class Vine {
         this.scene = scene;
         this.player = player;
         this.sprite = this.scene.physics.add.sprite(x, y, texture);
+        //this.vine = this.vine;
         
         // Configurer les propriétés de la vigne
         this.sprite.setCollideWorldBounds(true);
@@ -15,8 +16,11 @@ export class Vine {
         //this.scene.physics.add.collider(this.sprite, platforms);
 
         // Définir un événement de chevauchement pour que le joueur puisse interagir avec la vigne
-        this.scene.physics.add.overlap(this.player.player, this.sprite, this.onPlayerTouch, null, this);
+        
     }
+   
+    
+    
 
     setupAnimations() {
         // Créer une animation de balancement léger pour les lianes
@@ -32,14 +36,8 @@ export class Vine {
     }
     
     
-    
-
-    onPlayerTouch(player, vine) {
-        console.log("Le joueur a touché la vigne!");
-        // Logique pour grimper ou interagir avec la vigne
-    }
 
     update() {
-        // Mettre à jour la vigne si nécessaire
+        // Mettre à j
     }
 }
