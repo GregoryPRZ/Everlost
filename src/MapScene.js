@@ -43,7 +43,6 @@ export class MapScene extends Phaser.Scene {
     this.scene.get("SceneMenu").titleMusic.stop();
 
     this.mapMusic = this.sound.add("mapMusic", { loop: true });
-    this.mapMusic.play();
     this.mapMusic.setVolume(0.5); // Volume à 50% (valeurs entre 0 et 1)
     this.mapMusic.play({ loop: true }); // Lecture en boucle
 
