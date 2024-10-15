@@ -21,14 +21,14 @@ export class Crow {
       this.speed = 100; // Vitesse de vol horizontale
   
       // Ajouter un détecteur de proximité
-      this.proximitySensor = this.scene.add.circle(x, y, 200); // Rayon de détection de 200 pixels
+      /*this.proximitySensor = this.scene.add.circle(x, y, 200); // Rayon de détection de 200 pixels
       this.scene.physics.add.existing(this.proximitySensor);
       this.proximitySensor.body.setCircle(200);
       this.proximitySensor.body.setAllowGravity(false);
-      this.proximitySensor.body.setImmovable(true);
+      this.proximitySensor.body.setImmovable(true);*/
   
       // Vérifier les collisions avec le joueur
-      this.scene.physics.add.overlap(this.proximitySensor, this.player, this.diveAttack, null, this);
+      this.scene.physics.add.overlap(this.player, this.diveAttack, null, this);
     }
   
     diveAttack() {

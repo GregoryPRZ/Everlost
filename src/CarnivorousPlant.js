@@ -17,14 +17,14 @@ export class CarnivorousPlant {
       this.health = 3;
   
       // Ajouter un détecteur de proximité
-      this.proximitySensor = this.scene.add.circle(x, y, 100);
+      /*this.proximitySensor = this.scene.add.circle(x, y, 100);
       this.scene.physics.add.existing(this.proximitySensor);
       this.proximitySensor.body.setCircle(100);
       this.proximitySensor.body.setAllowGravity(false);
-      this.proximitySensor.body.setImmovable(true);
+      this.proximitySensor.body.setImmovable(true);*/
   
       // Vérifier les collisions avec le joueur
-      this.scene.physics.add.overlap(this.proximitySensor, this.player, this.startAttack, null, this);
+      this.scene.physics.add.overlap(this.player, this.startAttack, null, this);
     }
   
     startAttack() {
@@ -50,7 +50,7 @@ export class CarnivorousPlant {
     update() {
       // Vérifier la distance avec le joueur
       const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, this.player.x, this.player.y);
-      if (distance < 100) {
+      if (distance < 100 && !this.isAttacking) {
         this.startAttack();
       }
     }
