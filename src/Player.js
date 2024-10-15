@@ -43,7 +43,7 @@ export class Player {
 // Fonction pour faire clignoter le joueur et réduire les points de vie
 takeDamage() {
   if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
-
+  this.scene.sound.play('hurtSound');
   this.lifePoints--; // Réduit la vie du joueur
   this.isInvincible = true; // Rend le joueur temporairement invincible
   this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies

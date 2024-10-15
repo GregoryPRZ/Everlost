@@ -27,6 +27,7 @@ export class MapScene extends Phaser.Scene {
     this.load.audio("attackSound", "src/assets/sounds/se_sword.mp3");
     this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
     this.load.audio('stepSound', 'src/assets/sounds/se_step.mp3');
+    this.load.audio('hurtSound', 'src/assets/sounds/se_hurt.mp3');
   }
 
   create() {
