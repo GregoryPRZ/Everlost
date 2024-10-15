@@ -129,7 +129,7 @@ export class Player {
   }
 
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack)) {
+    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.player.anims.currentAnim.key !== "anim_attaque") { // Vérifier si le joueur n'est pas déjà en train d'attaquer
       // Lancer l'animation d'attaque
       this.player.anims.play("anim_attaque", true);
       this.scene.sound.play('attackSound'); // Jouer le son d'attaque

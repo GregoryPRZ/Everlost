@@ -30,9 +30,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.tilemapTiledJSON("carte", "src/assets/map.json");
 
     // Spritesheets enemmis + players
-    this.load.spritesheet("enemi", "src/assets/enemi.png", {
-      frameWidth: 32,
-      frameHeight: 48,
+    this.load.spritesheet("enemi", "src/assets/blob_move.png", {
+      frameWidth: 64,
+      frameHeight: 64,
     });
 
     //lianes
@@ -105,24 +105,14 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 64
     });
 
+    // Charger la texture de la balle
+    this.load.image("bullet_texture", "src/assets/Bullet.png");
+
 
   }
 
   create() {
     this.scene.start("SceneMenu");
     //---------------------------------------
-    this.anims.create({
-      key: "enemy_gauche",
-      frames: this.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "enemy_droite",
-      frames: this.anims.generateFrameNumbers("enemi", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
   }
 }
