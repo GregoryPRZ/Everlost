@@ -45,34 +45,56 @@ takeDamage() {
 
   this.lifePoints--; // Réduit la vie du joueur
   this.isInvincible = true; // Rend le joueur temporairement invincible
+  this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+  if (this.lifePoints <= 0) {
+      this.die(); // Appelle une méthode pour gérer la mort du joueur
+      return; // Sort de la méthode
+  }
 
-  // Appel à la fonction blinkRed pour clignoter en rouge
   this.blinkRed();
 
   // Remettre le joueur visible et stopper l'invincibilité après un certain temps
   this.scene.time.delayedCall(1000, () => {
       this.isInvincible = false;
-      this.player.clearTint(); // Retirer la teinte rouge
+      if (this.player) {
+          this.player.clearTint(); // Retirer la teinte rouge
+      }
   }, [], this);
 }
 
-// Fonction pour faire clignoter le joueur en rouge
+die() {
+    if (this.player) {
+        this.player.body.setEnable(false); // Désactiver la physique
+        this.player.setVisible(false); // Rendre le joueur invisible
+        this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
+        this.player = null; // Assurez-vous que this.player est null
+        this.scene.scene.start("SceneMenu"); // Rediriger vers le menu
+    }
+}
+
 blinkRed() {
+  if (!this.player) return; // Vérifiez si le joueur existe avant d'appliquer la teinte
+
   this.player.setTint(0xff0000); // Applique une teinte rouge
 
   // Utiliser un tween pour gérer le clignotement
   this.scene.tweens.add({
       targets: this.player,
-      alpha: 0, // Faire disparaître le joueur (invisible)
+      alpha: 1, // Réduire l'opacité à 0.5 au lieu de 0
       ease: 'Cubic.easeOut',
       duration: 100, // Durée d'une phase de clignotement
       repeat: 5, // Répéter 5 fois
       yoyo: true, // Alterner entre visible et invisible
       onComplete: () => {
-          this.player.clearTint(); // Retirer la teinte rouge une fois terminé
+          if (this.player) {
+              this.player.clearTint(); // Retirer la teinte rouge une fois terminé
+          }
       }
   });
 }
+
+
+
 
 
 //---------------------------------------------------------------------------------
@@ -157,6 +179,7 @@ blinkRed() {
   }
 
   update() {
+    if (!this.player) return;
     // Réinitialiser la taille et l'offset de la hitbox à chaque mise à jour
     this.player.body.setSize(34, 60);
     this.player.body.setOffset(16, 0);
@@ -291,14 +314,6 @@ blinkRed() {
       this.scene.time.delayedCall(this.dashCooldown, () => {
         this.canDash = true; // Réactiver le dash après le cooldown
       });
-    }
-  }
-
-  decreaseLife() {
-    this.lifePoints--;
-    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
-    if (this.lifePoints <= 0) {
-      this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
     }
   }
 

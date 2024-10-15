@@ -37,6 +37,7 @@ export class Enemy {
   // Mettre à jour l'ennemi à chaque frame
   update() {
     this.move();
+    if (!this.scene.player.player) return;
     const distanceToPlayer = Phaser.Math.Distance.Between(this.enemy.x, this.enemy.y, this.scene.player.player.x, this.scene.player.player.y); // Accès à la position du joueur
     
     // Vérifier si le joueur est à portée et si le délai entre les tirs est respecté
