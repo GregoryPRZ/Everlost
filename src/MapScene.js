@@ -283,13 +283,13 @@ export class MapScene extends Phaser.Scene {
     if (lifePoints === 5) {
       this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
-      this.lifeBar.setTexture("4hit");
-    } else if (lifePoints === 3) {
-      this.lifeBar.setTexture("3hit");
-    } else if (lifePoints === 2) {
-      this.lifeBar.setTexture("2hit");
-    } else if (lifePoints === 1) {
       this.lifeBar.setTexture("1hit");
+    } else if (lifePoints === 3) {
+      this.lifeBar.setTexture("2hit");
+    } else if (lifePoints === 2) {
+      this.lifeBar.setTexture("3hit");
+    } else if (lifePoints === 1) {
+      this.lifeBar.setTexture("4hit");
     }
     this.carnivorousPlant.update();
     // Remets la gravité lorsque le joueur est au sol ou sur les plateformes
