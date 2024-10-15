@@ -105,15 +105,33 @@ export class Enemy {
   // Fonction pour faire tirer l'ennemi
   shoot() {
     console.log("L'ennemi tire !");
-    const bullet = this.scene.physics.add.sprite(this.enemy.x + 10, this.enemy.y, "bullet_texture");
-    bullet.setVelocityX(this.direction * 300); // Le tir va dans la direction de l'ennemi
-    // Collision entre la balle et le joueur
+    
+    // Créer la balle à la position de l'ennemi
+    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y, "bullet_texture");
+
+    // Calculer le vecteur directionnel vers le joueur
+    const playerX = this.scene.player.player.x;
+    const playerY = this.scene.player.player.y;
+
+    const directionX = playerX - this.enemy.x;
+    const directionY = playerY - this.enemy.y;
+
+    // Normaliser le vecteur directionnel pour garder une vitesse constante
+    const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+    const normalizedX = (directionX / magnitude) * 300; // 300 est la vitesse de la balle
+    const normalizedY = (directionY / magnitude) * 300;
+
+    // Appliquer la vélocité calculée à la balle
+    bullet.setVelocity(normalizedX, normalizedY);
+
+    // Gérer la collision entre la balle et le joueur
     this.scene.physics.add.collider(bullet, this.scene.player.player, () => {
-      console.log("Le joueur est touché !");
-      bullet.destroy(); // Détruit la balle lorsqu'elle touche le joueur
-      // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
-      this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
-  });
+        console.log("Le joueur est touché !");
+        bullet.destroy(); // Détruit la balle lorsqu'elle touche le joueur
+        // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
+        this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
+    });
   }
+
 
 }
