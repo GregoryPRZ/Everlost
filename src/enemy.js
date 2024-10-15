@@ -7,7 +7,6 @@ export class Enemy {
     this.enemy.setCollideWorldBounds(true);
     this.enemy.setGravityY(300);
 
-    
     // Collision avec le calque de plateformes
     this.scene.physics.add.collider(
       this.enemy,
@@ -20,7 +19,7 @@ export class Enemy {
     // Propriétés du comportement
     this.speed = 100;
     this.direction = 1;
-    this.shootCooldown = 1000; // Délai entre les tirs (en millisecondes)
+    this.shootCooldown = 2000; // Délai entre les tirs (en millisecondes)
     this.lastShotTime = 0; // Dernière fois où l'ennemi a tiré
 
     // Limites de déplacement
@@ -133,6 +132,4 @@ export class Enemy {
         this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
     });
   }
-
-
 }

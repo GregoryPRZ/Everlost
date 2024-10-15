@@ -19,11 +19,15 @@ export class MapScene extends Phaser.Scene {
 
   preload() {
     // Charger les sons
+    this.load.audio('blobSound', 'src/assets/sounds/se_blob.mp3'); // Remplacez le chemin par celui de votre fichier audio
+    this.load.audio('crowCawSound', 'src/assets/sounds/se_crow.mp3'); // Remplacez le chemin par celui de votre fichier audio
     this.load.audio("jumpSound", "src/assets/sounds/se_jump.mp3");
     this.load.audio("poisonSound", "src/assets/sounds/se_poison.mp3");
     this.load.audio("dashSound", "src/assets/sounds/se_dash.mp3");
     this.load.audio("attackSound", "src/assets/sounds/se_sword.mp3");
     this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
+    this.load.audio('stepSound', 'src/assets/sounds/se_step.mp3');
+    this.load.audio('hurtSound', 'src/assets/sounds/se_hurt.mp3');
   }
 
   create() {
@@ -39,7 +43,8 @@ export class MapScene extends Phaser.Scene {
     this.scene.get("SceneMenu").titleMusic.stop();
 
     this.mapMusic = this.sound.add("mapMusic", { loop: true });
-    this.mapMusic.play();
+    this.mapMusic.setVolume(0.5); // Volume à 50% (valeurs entre 0 et 1)
+    this.mapMusic.play({ loop: true }); // Lecture en boucle
 
     if (this.carteDuNiveau) {
       console.log("Carte du niveau chargée avec succès");
@@ -287,6 +292,8 @@ export class MapScene extends Phaser.Scene {
       this.enemy.update();
       //console.log("Enemy update appelé"); // Débogage : Suivre les mises à jour de l'ennemi
     }
+
+    this.crow.update();
 
     // Mise à jour du joueur
     this.player.update();

@@ -32,6 +32,7 @@ export class Player {
     this.dashTime = 150; // Durée du dash en ms
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
     this.canDash = true; // Contrôle du dash
+    this.isMoving = false; // Variable pour suivre si le joueur est en mouvement
 
     this.lifePoints = 5; // Par exemple 5 vies
 
@@ -42,7 +43,7 @@ export class Player {
 // Fonction pour faire clignoter le joueur et réduire les points de vie
 takeDamage() {
   if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
-
+  this.scene.sound.play('hurtSound');
   this.lifePoints--; // Réduit la vie du joueur
   this.isInvincible = true; // Rend le joueur temporairement invincible
   this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
@@ -68,7 +69,8 @@ die() {
         this.player.setVisible(false); // Rendre le joueur invisible
         this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
         this.player = null; // Assurez-vous que this.player est null
-        this.scene.scene.start("SceneMenu"); // Rediriger vers le menu
+        this.scene.scene.get("MapScene").mapMusic.stop();
+        this.scene.scene.start("GameOver"); // Rediriger vers le menu
     }
 }
 
@@ -180,23 +182,25 @@ blinkRed() {
 
   update() {
     if (!this.player) return;
+    
     // Réinitialiser la taille et l'offset de la hitbox à chaque mise à jour
     this.player.body.setSize(34, 60);
     this.player.body.setOffset(16, 0);
-
-    // Appeler les fonctions pour gérer le mouvement, le dash et le saut
+  
+    // Appeler les fonctions pour gérer le mouvement et les actions
     this.AnimMouvement();
-    this.AnimDash();
     this.Saut();
-    this.AnimAttaque();
+    this.AnimDash();
+    this.AnimAttaque(); // Gérer l'attaque ici
   }
+  
 
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.player.anims.currentAnim.key !== "anim_attaque") { // Vérifier si le joueur n'est pas déjà en train d'attaquer
+    if (Phaser.Input.Keyboard.JustDown(this.attack)) {
       // Lancer l'animation d'attaque
       this.player.anims.play("anim_attaque", true);
       this.scene.sound.play('attackSound'); // Jouer le son d'attaque
-
+  
       // Vérifier dans quelle direction le joueur est orienté (gauche ou droite)
       if (this.player.flipX) {
         this.player.setVelocityX(-200);
@@ -206,68 +210,91 @@ blinkRed() {
     }
   }
 
-  AnimMouvement() {
-    if (
-      this.player.anims.currentAnim &&
-      this.player.anims.currentAnim.key === "anim_attaque" &&
-      this.player.anims.isPlaying
-    ) {
-      return; // On sort de la fonction si l'attaque est en cours
-    }
+// Ajoutez cette variable dans le constructeur
 
-    // Gérer le mouvement du joueur sur l'axe horizontal
-    if (this.clavier.down.isDown && this.player.body.blocked.down) {
-      // Si la flèche du bas est enfoncée et que le joueur est au sol
-      this.player.body.setSize(34, 30);
-      this.player.body.setOffset(16, 30);
+AnimMouvement() {
+  if (
+    this.player.anims.currentAnim &&
+    this.player.anims.currentAnim.key === "anim_attaque" &&
+    this.player.anims.isPlaying
+  ) {
+    return; // On sort de la fonction si l'attaque est en cours
+  }
 
-      if (this.clavier.left.isDown) {
-        this.player.setVelocityX(-80); // Déplacement vers la gauche, vitesse réduite
-        this.player.flipX = true; // Miroir du sprite vers la gauche
-        this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
-      } else if (this.clavier.right.isDown) {
-        this.player.setVelocityX(80); // Déplacement vers la droite, vitesse réduite
-        this.player.flipX = false; // Normal (pas de miroir)
-        this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
-      } else {
-        this.player.setVelocityX(0); // Si seulement la flèche du bas est enfoncée, on reste immobile
-        this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
-      }
+  // Gérer le mouvement du joueur sur l'axe horizontal
+  if (this.clavier.down.isDown && this.player.body.blocked.down) {
+    // Si la flèche du bas est enfoncée et que le joueur est au sol
+    this.player.body.setSize(34, 30);
+    this.player.body.setOffset(16, 30);
+
+    if (this.clavier.left.isDown) {
+      this.player.setVelocityX(-80); // Déplacement vers la gauche, vitesse réduite
+      this.player.flipX = true; // Miroir du sprite vers la gauche
+      this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
+      this.playFootstepSound(); // Jouer le son de pas
+    } else if (this.clavier.right.isDown) {
+      this.player.setVelocityX(80); // Déplacement vers la droite, vitesse réduite
+      this.player.flipX = false; // Normal (pas de miroir)
+      this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
+      this.playFootstepSound(); // Jouer le son de pas
     } else {
-      // Gestion normale du mouvement si la flèche du bas n'est pas enfoncée
+      this.player.setVelocityX(0); // Si seulement la flèche du bas est enfoncée, on reste immobile
+      this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
+    }
+  } else {
+    // Gestion normale du mouvement si la flèche du bas n'est pas enfoncée
 
-      if (this.clavier.left.isDown) {
-        this.player.setVelocityX(-160); // Vitesse vers la gauche
-        this.player.flipX = true; // Miroir du sprite vers la gauche
+    if (this.clavier.left.isDown) {
+      this.player.setVelocityX(-160); // Vitesse vers la gauche
+      this.player.flipX = true; // Miroir du sprite vers la gauche
 
-        // Si le joueur est en l'air, jouer l'animation de saut
-        if (!this.player.body.blocked.down) {
-          this.player.anims.play("anim_saut", true);
-        } else {
-          this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
-        }
-      } else if (this.clavier.right.isDown) {
-        this.player.setVelocityX(160); // Vitesse vers la droite
-        this.player.flipX = false; // Normal
-
-        // Si le joueur est en l'air, jouer l'animation de saut
-        if (!this.player.body.blocked.down) {
-          this.player.anims.play("anim_saut", true);
-        } else {
-          this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
-        }
+      // Si le joueur est en l'air, jouer l'animation de saut
+      if (!this.player.body.blocked.down) {
+        this.player.anims.play("anim_saut", true);
       } else {
-        this.player.setVelocityX(0); // Arrêter le mouvement
+        this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
+      }
+      this.playFootstepSound(); // Jouer le son de pas
+    } else if (this.clavier.right.isDown) {
+      this.player.setVelocityX(160); // Vitesse vers la droite
+      this.player.flipX = false; // Normal
 
-        // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
-        if (this.player.body.blocked.down) {
-          this.player.anims.play("anim_face", true); // Jouer l'animation face
-        } else {
-          this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
-        }
+      // Si le joueur est en l'air, jouer l'animation de saut
+      if (!this.player.body.blocked.down) {
+        this.player.anims.play("anim_saut", true);
+      } else {
+        this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
+      }
+      this.playFootstepSound(); // Jouer le son de pas
+    } else {
+      this.player.setVelocityX(0); // Arrêter le mouvement
+
+      // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
+      if (this.player.body.blocked.down) {
+        this.player.anims.play("anim_face", true); // Jouer l'animation face
+      } else {
+        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
       }
     }
   }
+}
+
+playFootstepSound() {
+  if (this.player.body.blocked.down && !this.isMoving && (this.clavier.left.isDown || this.clavier.right.isDown)) {
+    this.isMoving = true; // Le joueur est maintenant en mouvement
+    this.scene.sound.play('stepSound'); // Jouer le son de pas
+
+    // Arrêter le son après un court délai pour éviter les répétitions
+    this.scene.time.delayedCall(700, () => {
+      this.isMoving = false; // Le joueur n'est plus en mouvement après un court délai
+    });
+  } else if (!this.clavier.left.isDown && !this.clavier.right.isDown) {
+    this.isMoving = false; // Le joueur n'est plus en mouvement
+  }
+}
+
+
+
 
   Saut() {
     // Vérifie si le joueur est au sol pour réinitialiser les sauts
