@@ -209,7 +209,7 @@ export class MapScene extends Phaser.Scene {
         start: 0,
         end: 3,
       }),
-      frameRate: 4,
+      frameRate: 10,
       repeat: -1, // L'animation boucle indéfiniment
     });
 
@@ -226,7 +226,7 @@ export class MapScene extends Phaser.Scene {
     // instance de la plante carnivore
     this.carnivorousPlant = new CarnivorousPlant(
       this,
-      900,
+      300,
       5920,
       this.player,
       this.platforms
