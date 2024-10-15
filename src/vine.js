@@ -9,13 +9,7 @@ export class Vine {
         this.sprite.setCollideWorldBounds(true);
         this.sprite.body.setAllowGravity(false);
         
-        // Ajouter des animations ou autres configurations si nécessaire
-        //this.setupAnimations();
-        
-        // Ajouter des collisions
-        //this.scene.physics.add.collider(this.sprite, platforms);
-
-        // Définir un événement de chevauchement pour que le joueur puisse interagir avec la vigne
+       
         
     }
    

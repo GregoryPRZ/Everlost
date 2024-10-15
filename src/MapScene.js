@@ -155,6 +155,7 @@ export class MapScene extends Phaser.Scene {
     } else {
       console.error("Erreur : Ennemi non créé");
     }800, 1500*/
+//--------------------------------------vine----------------------------------------------------------------
 
     //liane
     console.log("Création des lianes");
@@ -167,7 +168,7 @@ export class MapScene extends Phaser.Scene {
       this.calque_plateformes
     );
 
-        // Détecter la collision entre le joueur et la vigne
+    // Détecter la collision entre le joueur et la vigne
     this.physics.add.overlap(this.player.player, this.vine.sprite, () => {
       // Appelle la méthode takeDamage lorsque le joueur touche la vigne
       this.player.takeDamage();
@@ -176,7 +177,6 @@ export class MapScene extends Phaser.Scene {
       this.player.blinkRed();
     }, null, this);
 
-    
 
 
     console.log("Configuration des animations pour la vigne");
@@ -225,6 +225,15 @@ export class MapScene extends Phaser.Scene {
       this.player,
       this.platforms
     );
+
+    // Détecter la collision entre le joueur et la vigne
+    this.physics.add.overlap(this.player.player, this.carnivorousPlant.sprite, () => {
+      // Appelle la méthode takeDamage lorsque le joueur touche la vigne
+      this.player.takeDamage();
+      
+      // Faire clignoter le joueur
+      this.player.blinkRed();
+    }, null, this);
     //-------------------------------------------------------------
     //-----------------------------corbeau--------------------------------
     // Créer les animations pour le corbeau
