@@ -20,7 +20,7 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image("tuilesJeu", "src/assets/tuilesJeu.png");
     this.load.image("bullet", "src/assets/enemy/bullet.png");
-    this.load.image("fond", "src/assets/images/background.png");
+    this.load.image("fond", "src/assets/background/background.png");
 
     this.load.image("full", "src/assets/player/hpbarfull.png");
     this.load.image("4hit", "src/assets/player/hpbar4hit.png");
