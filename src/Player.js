@@ -213,11 +213,14 @@ blinkRed() {
     this.scene.sound.play('objectSound');
     this.canAttack = true;
     this.scene.updateSwordUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé une épée ! Appuyez sur X pour attaquer les ennemis.");
   }
 
   collectDreamSword() {
     this.scene.sound.play('objectSound');
     this.canShoot = true;
+    this.scene.updateDreamSwordUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé l'épée des rêves ! Appuyez sur X pour tirer sur les ennemis et drainer leur vie.");
   }
 
   AnimAttaque() {
@@ -414,6 +417,8 @@ playFootstepSound() {
 collectBoots() {
   this.scene.sound.play('objectSound');
   this.hasDoubleJump = true; // Active le double saut
+  this.scene.updateBootsUI(); // Met à jour l'affichage des bottes
+  this.scene.showNotification("Vous avez trouvé les bottes dorées ! Appuyez deux fois sur ESPACE pour effectuer un double saut.");
 }
 
 
@@ -447,6 +452,8 @@ collectBoots() {
   collectDash() {
     this.scene.sound.play('objectSound');
     this.canUseDash = true; // Active le dash
+    this.scene.updateDashUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé le badge d'accélération ! Appuyez sur Z pour effectuer une ruée.");
   }
 
   AnimDash() {
@@ -498,5 +505,7 @@ collectBoots() {
       this.lifePoints++;
       this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
     }
+    this.scene.updateDiamondHeartUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé le coeur de diamant ! Vous ressentez comme une sensation étrange...");
   }
 }

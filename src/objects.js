@@ -244,7 +244,7 @@ export class Boots {
   
       // Ajouter la détection de chevauchement entre les bottes et le joueur
       this.scene.physics.add.overlap(player.player, this.sword, () => {
-        player.collectSword(); // Appliquer l'effet des bottes au joueur
+        player.collectDreamSword(); // Appliquer l'effet des bottes au joueur
         this.destroy(); // Supprimer les bottes après la collecte
       });
   

@@ -19,6 +19,7 @@ export class MapScene extends Phaser.Scene {
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
     this.enemyText = null; // Texte pour afficher le compteur
     this.bootsImage = null; // Image pour les bottes dans l'interface
+    this.notificationText = null; // Texte de la popup
   }
 
   preload() {
@@ -357,5 +358,56 @@ export class MapScene extends Phaser.Scene {
     if (this.swordImage) {
       this.swordImage.clearTint(); // Enlève la teinte noire
     }
+  }
+
+  updateDashUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.dashImage) {
+      this.dashImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateBootsUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.bootsImage) {
+      this.bootsImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateDreamSwordUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.dreamSwordImage) {
+      this.dreamSwordImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateDiamondHeartUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.diamondHeartImage) {
+      this.diamondHeartImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  showNotification(message) {
+    // Si une notification existe déjà, la détruire avant d'en créer une nouvelle
+    if (this.notificationText) {
+      this.notificationText.destroy();
+    }
+
+    // Créer une nouvelle notification
+    this.notificationText = this.add.text(
+      this.cameras.main.width / 2,  // Centré horizontalement
+      this.cameras.main.height - 50, // Centré verticalement
+      message,
+      { font: '48px EnchantedLand', fill: '#ffffff', backgroundColor: '#00AAFF', padding: { left: 10, right: 10, top: 5, bottom: 5 } }
+    ).setOrigin(0.5); // Centrer l'origine pour que le texte soit au milieu
+
+    this.notificationText.setScrollFactor(0); // Fixe le texte pour qu'il reste à l'écran
+
+    // Faire disparaître la notification après 2 secondes
+    this.time.delayedCall(10000, () => {
+      this.notificationText.destroy(); // Supprimer la notification
+      this.notificationText = null;    // Réinitialiser la variable
+    });
   }
 }
