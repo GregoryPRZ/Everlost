@@ -114,10 +114,6 @@ export class PreloadScene extends Phaser.Scene {
     });
 
 
-//------------------------- Charger la texture de la balle ----------------------------
-    this.load.image("bullet_texture", "src/assets/Bullet.png");
-
-
 }
 
   create() {
