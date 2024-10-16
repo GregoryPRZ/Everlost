@@ -190,8 +190,6 @@ export class Boots {
   export class Sword {
     constructor(scene, x, y, calque_plateformes, player) {
       this.scene = scene;
-  
-      // Initialisation de l'objet Boots
       this.sword = this.scene.physics.add.sprite(x, y, 'everlost_sword');
       this.sword.setGravityY(0); // Les bottes ne subissent pas la gravité
       this.sword.body.setAllowGravity(false); // Les bottes ne subissent pas la gravité
