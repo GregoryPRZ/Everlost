@@ -204,17 +204,38 @@ blinkRed() {
   }
 
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack) {
+    if (Phaser.Input.Keyboard.JustDown(this.attack)) {
       // Lancer l'animation d'attaque
       this.player.anims.play("anim_attaque", true);
       this.scene.sound.play('attackSound'); // Jouer le son d'attaque
   
-      // Vérifier dans quelle direction le joueur est orienté (gauche ou droite)
-      if (this.player.flipX) {
-        this.player.setVelocityX(-200);
+    // Créer une hitbox temporaire pour l'attaque
+    let hitbox = this.scene.add.rectangle(
+      this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
+      this.player.y,
+      50, // Largeur de la hitbox
+      50, // Hauteur de la hitbox
+      0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
+      0 // Opacité de 0 (invisible)
+    );
+    
+    // Activer la physique sur la hitbox
+    this.scene.physics.add.existing(hitbox);
+    hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
+
+    // Détection des collisions avec les ennemis
+    this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {
+      if (enemySprite.instance) {
+        enemySprite.instance.takeDamage(); // Appelle la méthode de l'instance complète
       } else {
-        this.player.setVelocityX(200);
+        console.warn("L'ennemi n'a pas d'instance associée :", enemySprite);
       }
+    });
+
+    // Détruire la hitbox après un court délai pour simuler un coup rapide
+    this.scene.time.delayedCall(200, () => {
+      hitbox.destroy(); // Supprimer la hitbox après l'attaque
+    });
     }
   }
 
@@ -366,17 +387,12 @@ collectBoots() {
       // Si la tuile est une échelle, autoriser le mouvement vertical
       if (this.clavier.up.isDown) {
         this.player.setVelocityY(-150); // Monter
-        this.player.setGravityY(0); // Désactiver la gravité
       } else if (this.clavier.down.isDown) {
         this.player.setVelocityY(150); // Descendre
-        this.player.setGravityY(0); // Désactiver la gravité
       } else {
         this.player.setVelocityY(0); // Arrêter le mouvement vertical
-        this.player.setGravityY(0); // Toujours désactiver la gravité sur l'échelle
       }
     } else {
-      // Sinon, réactiver la gravité
-      this.player.setGravityY(300); // Réactive la gravité lorsque le joueur n'est pas sur l'échelle
     }
   }
 

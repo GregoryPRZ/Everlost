@@ -100,11 +100,11 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = enemyObjects.length; // Nombre total d'ennemis au début
     this.defeatedEnemies = 0; // Initialiser le nombre d'ennemis vaincus à 0
 
-    // Ajouter un texte en haut à gauche pour afficher le compteur d'ennemis
-    this.enemyText = this.add.text(16, 75, `Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`, {
+    this.enemyText = this.add.text(16, 75, `Ennemis battus: 0/${this.totalEnemies}`, {
       fontSize: '20px',
       fill: '#ffffff'
-    }).setScrollFactor(0); // Le texte ne bouge pas avec la caméra
+    }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
+    
 
     // Utiliser enemyObjects pour placer les ennemis
     enemyObjects.forEach((enemyData) => {
@@ -279,8 +279,11 @@ export class MapScene extends Phaser.Scene {
   }
 
   updateEnemyText() {
-    // Met à jour le texte pour afficher le nombre d'ennemis restants et battus
-    this.enemyText.setText(`Enemies: ${this.defeatedEnemies}/${this.totalEnemies}`);
+    if (this.enemyText) {
+      this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
+    } else {
+      console.warn("Le texte des ennemis battus n'existe pas encore ou a été détruit.");
+    }
   }
 
   updateLifeDisplay() {
