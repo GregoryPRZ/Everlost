@@ -1,5 +1,5 @@
 import { Blob, CarnivorousPlant, Vine, Crow } from "./enemy.js";
-import { Player } from "./Player.js"; 
+import { Player } from "./Player.js";
 
 export class MapScene extends Phaser.Scene {
   constructor() {
@@ -17,15 +17,15 @@ export class MapScene extends Phaser.Scene {
 
   preload() {
     // Charger les sons
-    this.load.audio('blobSound', 'src/assets/sounds/se_blob.mp3'); // Remplacez le chemin par celui de votre fichier audio
-    this.load.audio('crowCawSound', 'src/assets/sounds/se_crow.mp3'); // Remplacez le chemin par celui de votre fichier audio
+    this.load.audio("blobSound", "src/assets/sounds/se_blob.mp3"); // Remplacez le chemin par celui de votre fichier audio
+    this.load.audio("crowCawSound", "src/assets/sounds/se_crow.mp3"); // Remplacez le chemin par celui de votre fichier audio
     this.load.audio("jumpSound", "src/assets/sounds/se_jump.mp3");
     this.load.audio("poisonSound", "src/assets/sounds/se_poison.mp3");
     this.load.audio("dashSound", "src/assets/sounds/se_dash.mp3");
     this.load.audio("attackSound", "src/assets/sounds/se_sword.mp3");
     this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
-    this.load.audio('stepSound', 'src/assets/sounds/se_step.mp3');
-    this.load.audio('hurtSound', 'src/assets/sounds/se_hurt.mp3');
+    this.load.audio("stepSound", "src/assets/sounds/se_step.mp3");
+    this.load.audio("hurtSound", "src/assets/sounds/se_hurt.mp3");
   }
 
   create() {
@@ -85,65 +85,92 @@ export class MapScene extends Phaser.Scene {
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
 
-    this.enemies = this.physics.add.group();
-    const enemyObjects = this.carteDuNiveau.getObjectLayer('calque_ennemis').objects; // Assurez-vous que le nom du calque correspond
+    this.enemies = this.physics.add.group(); // Groupe des ennemis
 
+    // Obtenez les données d'ennemis depuis le calque de la carte
+    const enemyObjects =
+      this.carteDuNiveau.getObjectLayer("calque_ennemis").objects;
+
+    // Utiliser enemyObjects pour placer les ennemis
     enemyObjects.forEach((enemyData) => {
-      const enemyType = enemyData.properties.find(prop => prop.name === 'enemyType').value;
-      console.log('Creating enemy of type:', enemyType); // Log pour le type d'ennemi
-  
+      const enemyType = enemyData.properties.find(
+        (prop) => prop.name === "enemyType"
+      ).value;
+      console.log("Creating enemy of type:", enemyType);
+
       let enemy;
+      // Créer l'ennemi en fonction de son type
       switch (enemyType) {
-          case 'blob':
-              enemy = new Blob(this, enemyData.x, enemyData.y, 'enemi', this.calque_plateformes); // Assurez-vous que texture est définie
-              break;
-          case 'vine':
-              enemy = new Vine(this, enemyData.x, enemyData.y, 'vine'); // Assurez-vous que texture est définie
-              break;
-          case 'plant':
-              enemy = new CarnivorousPlant(this, enemyData.x, enemyData.y, this.player);
-              break;
-          case 'crow':
-              enemy = new Crow(this, enemyData.x, enemyData.y, this.player);
-              break;
+        case "blob":
+          enemy = new Blob(
+            this,
+            enemyData.x,
+            enemyData.y,
+            "enemi",
+            this.calque_plateformes
+          );
+          break;
+        case "vine":
+          enemy = new Vine(this, enemyData.x, enemyData.y, "vine");
+          break;
+        case "plant":
+          enemy = new CarnivorousPlant(
+            this,
+            enemyData.x,
+            enemyData.y,
+            this.player
+          );
+          break;
+        case "crow":
+          enemy = new Crow(this, enemyData.x, enemyData.y, this.player);
+          break;
       }
-  
+
       if (enemy) {
-          console.log('Enemy created:', enemy); // Log pour vérifier l'ennemi créé
-          this.enemies.add(enemy.enemy);
-          this.enemyObjects.push(enemy); // Stocker l'instance complète de l'ennemi
-          enemy.enemy.setCollideWorldBounds(true); // Assurez-vous que enemy n'est pas undefined ici
+        // Ajouter l'ennemi complet au groupe this.enemies en tant qu'objet
+        this.enemies.add(enemy.enemy); // Ajoute uniquement le sprite au groupe
+
+        // Stocker l'instance complète dans une propriété de sprite pour la mise à jour
+        enemy.enemy.instance = enemy;
+
+        enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
+        console.log("Enemy created and added to group:", enemy);
       } else {
-          console.error('Enemy is undefined'); // Log pour les erreurs
+        console.error("Enemy creation failed for:", enemyType);
       }
-  });
+    });
+
+    // Collisions
+    this.physics.add.collider(this.enemies, this.calque_plateformes);
+    this.physics.add.collider(this.player.player, this.calque_plateformes);
+    this.physics.add.overlap(
+      this.player.player,
+      this.enemies,
+      () => {
+        this.player.takeDamage();
+        this.player.blinkRed();
+      },
+      null,
+      this
+    );
 
     // Suivre le joueur avec la caméra
     this.cameras.main.startFollow(this.player.player);
-
-    this.physics.add.collider(this.enemies, this.calque_plateformes);
-    this.physics.add.collider(this.player.player, this.calque_plateformes);
-    this.physics.add.overlap(this.player.player, this.calque_echelle,() => { this.player.onScaleOverlap(this.calque_echelle);}, null, this);
-    this.physics.add.overlap(this.player.player, this.enemies, () => { this.player.takeDamage(); this.player.blinkRed();}, null, this);
   }
-  
 
   update() {
+    // Mettre à jour le joueur
     if (this.player) {
       this.player.update();
-      //console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
     }
-    if (this.enemyObjects) {
-      this.enemyObjects.forEach((enemy) => {
-          if (enemy.update) {
-              enemy.update(); // Appeler la méthode update de l'instance d'ennemi
-          }
-      });
-    }  
-    // Exemple de condition de perte de vie
-    if (this.playerIsHit) {
-      this.player.decreaseLife(); // Enlève une vie
-    }
+
+    // Mettre à jour tous les ennemis dans this.enemies
+    this.enemies.children.iterate((enemySprite) => {
+      // Vérifier si une instance complète d'ennemi existe
+      if (enemySprite.instance && enemySprite.instance.update) {
+        enemySprite.instance.update(); // Appeler la méthode update de l'instance complète
+      }
+    });
   }
 
   updateLifeDisplay() {
