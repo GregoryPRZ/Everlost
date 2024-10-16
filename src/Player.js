@@ -31,8 +31,8 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = false;
-    this.canAttack = false;
+    this.canShoot = true;
+    this.canAttack = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
     this.dashSpeed = 500;
