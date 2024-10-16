@@ -20,6 +20,7 @@ export class MapScene extends Phaser.Scene {
     this.enemyText = null; // Texte pour afficher le compteur
     this.bootsImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
+    this.alreadyAlerted = false; // Texte de la popup
   }
 
   preload() {
@@ -174,33 +175,10 @@ export class MapScene extends Phaser.Scene {
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
 
-         // Créer le texte au-dessus de l'ennemi 
-/*const enemyText = this.add.text(enemy.enemy.x, enemy.enemy.y - 60, 'Attention ennemi! \nAppuyez sur X pour tirer', {
-  fontSize: '22px', 
-  fill: '#ffffff', 
-  align: 'center',
-  stroke: '#ffffff', 
-  strokeThickness: 1, // Épaisseur du contour
-}).setOrigin(0.5, 0.5); // Centrer le texte
-
-// ombre au texte
-//enemyText.setShadow(2, 2, '#ffffff', 0.5);
-
-// fond semi-transparent derrière le texte
-const textBackground = this.add.graphics();
-textBackground.fillStyle(0xff0000, 0.3); // Couleur de fond
-textBackground.fillRect(enemyText.x - enemyText.width / 2 - 10, enemyText.y - enemyText.height / 2 - 10, enemyText.width + 20, enemyText.height + 20);
-
-// Supprimer le texte et le fond après 3 secondes
-this.time.delayedCall(3000, () => {
-  enemyText.destroy(); // Détruire le texte
-  textBackground.destroy(); // Détruire le fond
-});*/
-
-// Dans la fonction create()
-this.enemies.children.iterate(enemy => {
-  enemy.alerted = false; // Ajoute une propriété pour chaque ennemi
-});
+      // Dans la fonction create()
+      this.enemies.children.iterate(enemy => {
+        enemy.alerted = false; // Ajoute une propriété pour chaque ennemi
+      });
 
 
         console.log("Enemy created and added to group:", enemy);
@@ -327,16 +305,16 @@ this.enemies.children.iterate(enemy => {
       const distance = Phaser.Math.Distance.Between(this.player.player.x, this.player.player.y, enemy.x, enemy.y);
   
       // Définir une distance d'alerte
-      const alertDistance = 150; // Ajuste cette valeur selon tes besoins
+      const alertDistance = 300; // Ajuste cette valeur selon tes besoins
   
-      if (distance < alertDistance && !enemy.alerted) {
+      if (distance < alertDistance && !enemy.alerted && !this.alreadyAlerted) {
           // Créer un rectangle pour le fond
           const background = this.add.rectangle(enemy.x, enemy.y - 85, 320, 70, 0xff0000, 0.7).setOrigin(0.5, 0.5);
           background.setStrokeStyle(2, 0xffffff); // Bordure blanche pour le rectangle
           
           // Créer le texte d'alerte au-dessus de l'ennemi
-          const alertText = this.add.text(enemy.x, enemy.y - 80, "Attention Ennemis! Appuyer sur X pour tirer", {
-              fontSize: '20px',
+          const alertText = this.add.text(enemy.x, enemy.y - 80, "Attention à l'ennemi ! Vous n'avez pas encore d'arme.", {
+              font: '32px EnchantedLand',
               fill: '#ffffff',
               fontStyle: 'bold', 
               align: 'center',
@@ -351,6 +329,7 @@ this.enemies.children.iterate(enemy => {
   
           // Marquer l'ennemi comme déjà alerté
           enemy.alerted = true; // Indique que l'alerte a été affichée
+          this.alreadyAlerted = true;
       } else if (distance >= alertDistance) {
           // Réinitialiser l'état d'alerte si le joueur s'éloigne
           enemy.alerted = false; // Permet de réafficher le texte si le joueur se rapproche à nouveau
@@ -402,10 +381,10 @@ checkProximity() {
 
   updateLifeDisplay() {
     // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
-    const lifePoints = this.player.lifePoints;
+    let lifePoints = this.player.lifePoints;
 
     // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints = 5) {
+    if (lifePoints === 5) {
       this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
       this.lifeBar.setTexture("1hit");
