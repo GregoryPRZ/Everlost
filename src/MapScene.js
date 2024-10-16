@@ -173,6 +173,36 @@ export class MapScene extends Phaser.Scene {
         
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
+
+         // Créer le texte au-dessus de l'ennemi 
+/*const enemyText = this.add.text(enemy.enemy.x, enemy.enemy.y - 60, 'Attention ennemi! \nAppuyez sur X pour tirer', {
+  fontSize: '22px', 
+  fill: '#ffffff', 
+  align: 'center',
+  stroke: '#ffffff', 
+  strokeThickness: 1, // Épaisseur du contour
+}).setOrigin(0.5, 0.5); // Centrer le texte
+
+// ombre au texte
+//enemyText.setShadow(2, 2, '#ffffff', 0.5);
+
+// fond semi-transparent derrière le texte
+const textBackground = this.add.graphics();
+textBackground.fillStyle(0xff0000, 0.3); // Couleur de fond
+textBackground.fillRect(enemyText.x - enemyText.width / 2 - 10, enemyText.y - enemyText.height / 2 - 10, enemyText.width + 20, enemyText.height + 20);
+
+// Supprimer le texte et le fond après 3 secondes
+this.time.delayedCall(3000, () => {
+  enemyText.destroy(); // Détruire le texte
+  textBackground.destroy(); // Détruire le fond
+});*/
+
+// Dans la fonction create()
+this.enemies.children.iterate(enemy => {
+  enemy.alerted = false; // Ajoute une propriété pour chaque ennemi
+});
+
+
         console.log("Enemy created and added to group:", enemy);
       } else {
         console.error("Enemy creation failed for:", enemyType);
@@ -251,6 +281,10 @@ export class MapScene extends Phaser.Scene {
 
     // Suivre le joueur avec la caméra
     this.cameras.main.startFollow(this.player.player);
+//----------------------------------------------------------------------------
+
+
+
   }
 
   update() {
@@ -281,11 +315,70 @@ export class MapScene extends Phaser.Scene {
       }
     });
 
+    
+
   // Vérifier si tous les ennemis sont battus
     if (this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
       this.checkVictoryCondition(); // Appelle une méthode pour gérer la fin
     }
+
+    this.enemies.children.iterate(enemy => {
+      // Calculer la distance entre le joueur et l'ennemi
+      const distance = Phaser.Math.Distance.Between(this.player.player.x, this.player.player.y, enemy.x, enemy.y);
+  
+      // Définir une distance d'alerte
+      const alertDistance = 150; // Ajuste cette valeur selon tes besoins
+  
+      if (distance < alertDistance && !enemy.alerted) {
+          // Créer un rectangle pour le fond
+          const background = this.add.rectangle(enemy.x, enemy.y - 85, 320, 70, 0xff0000, 0.7).setOrigin(0.5, 0.5);
+          background.setStrokeStyle(2, 0xffffff); // Bordure blanche pour le rectangle
+          
+          // Créer le texte d'alerte au-dessus de l'ennemi
+          const alertText = this.add.text(enemy.x, enemy.y - 80, "Attention Ennemis! Appuyer sur X pour tirer", {
+              fontSize: '20px',
+              fill: '#ffffff',
+              fontStyle: 'bold', 
+              align: 'center',
+              wordWrap: { width: 300 } // Ajuster la largeur pour le retour à la ligne
+          }).setOrigin(0.5, 0.5); // Centrer le texte
+  
+          // Faire disparaître le texte et le fond après quelques secondes
+          this.time.delayedCall(3000, () => {
+              background.destroy(); // Détruit le fond
+              alertText.destroy(); // Détruit le texte après 3 secondes
+          });
+  
+          // Marquer l'ennemi comme déjà alerté
+          enemy.alerted = true; // Indique que l'alerte a été affichée
+      } else if (distance >= alertDistance) {
+          // Réinitialiser l'état d'alerte si le joueur s'éloigne
+          enemy.alerted = false; // Permet de réafficher le texte si le joueur se rapproche à nouveau
+      }
+  });
+  
+
   }
+//--------------------------------------------------------------
+checkProximity() {
+  this.enemies.children.iterate((enemySprite) => {
+    const distance = Phaser.Math.Distance.Between(
+      this.player.player.x,
+      this.player.player.y,
+      enemySprite.x,
+      enemySprite.y
+    );
+
+    if (distance < 100) { // Ajuste cette valeur selon le rayon de détection souhaité
+      this.helpText.setText('Approchez-vous de l\'ennemi pour attaquer!'); // Texte d'aide
+      this.helpText.setVisible(true); // Affiche le texte d'aide
+    } else {
+      this.helpText.setVisible(false); // Masque le texte d'aide si le joueur s'éloigne
+    }
+  });
+}
+
+//---------------------------------------------------------------
 
   checkVictoryCondition() {
     if (this.player.hasDiamondHeart) {
