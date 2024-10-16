@@ -212,6 +212,7 @@ blinkRed() {
   collectSword() {
     this.scene.sound.play('objectSound');
     this.canAttack = true;
+    this.scene.updateSwordUI(); // Met à jour l'affichage des bottes
   }
 
   collectDreamSword() {
@@ -322,7 +323,7 @@ blinkRed() {
 
 gainLife() {
   // Limiter le nombre de points de vie à un maximum de 5 (ou autre limite)
-  if (this.lifePoints < 5) {
+  if (this.lifePoints < 6) {
     this.lifePoints++;
     this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
   }
@@ -493,7 +494,9 @@ collectBoots() {
   collectDiamondHeart() {
     this.hasDiamondHeart = true;
     this.scene.sound.play('objectSound');
-    this.lifePoints = 10;
-    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints < 6) {
+      this.lifePoints++;
+      this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+    }
   }
 }
