@@ -75,6 +75,8 @@ export class MapScene extends Phaser.Scene {
     // Configurer les collisions pour le calque des plateformes
     this.calque_plateformes.setCollisionByProperty({ estSolide: true });
     this.calque_echelle.setCollisionByProperty({ estEchelle: true }); // Ajouter collision pour les échelles
+    // Assurez-vous que les tuiles de ce calque sont solides (optionnel selon la configuration de Tiled)
+    this.calque_mort.setCollisionByProperty({ estMortel: true }); // Assurez-vous que cela correspond à la propriété que vous avez définie dans Tiled.
 
     this.physics.world.setBounds(0, 0, 7680, 6144);
     this.cameras.main.setBounds(0, 0, 7080, 6144);
@@ -221,6 +223,7 @@ export class MapScene extends Phaser.Scene {
     // Collisions
     this.physics.add.collider(this.enemies, this.calque_plateformes);
     this.physics.add.collider(this.player.player, this.calque_plateformes);
+    this.physics.add.collider(this.player.player, this.calque_mort, this.handleDeath, null, this);
     this.physics.add.overlap(this.player.player, this.calque_echelle,() => { this.player.onScaleOverlap(this.calque_echelle);}, null, this);
     this.physics.add.overlap(
       this.player.player,
@@ -312,5 +315,10 @@ export class MapScene extends Phaser.Scene {
     } else if (lifePoints === 1) {
       this.lifeBar.setTexture("4hit");
     }
+  }
+
+  handleDeath() {
+    console.log("Le joueur est mort !");
+    this.player.die(); // Appelle la méthode pour gérer la mort du joueur
   }
 }

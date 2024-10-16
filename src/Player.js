@@ -75,6 +75,7 @@ die() {
         this.player.setVisible(false); // Rendre le joueur invisible
         this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
         this.player = null; // Assurez-vous que this.player est null
+        this.scene.enemyText.destroy();
         this.scene.scene.get("MapScene").mapMusic.stop();
         this.scene.scene.stop("MapScene");
         this.scene.scene.start("GameOver"); // Rediriger vers le menu

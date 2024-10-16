@@ -18,31 +18,40 @@ export class Blob {
     this.rightLimit = x + 100; // Limite droite
     this.enemy.body.setSize(32, 32);
     this.enemy.body.setOffset(16, 32);
+    this.healthBar = this.scene.add.graphics();
 
+    this.updateHealthBar();
     this.setupAnimations();
+  }
+
+  updateHealthBar() {
+      this.healthBar.clear(); // Efface l'ancienne barre
+      const width = 50; // Largeur de la barre de vie
+      const height = 5; // Hauteur de la barre de vie
+      const healthPercentage = this.lifePoints / 3; // Supposons que 3 est le maximum de points de vie
+
+      // Dessine le fond de la barre de vie
+      this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+      this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+      // Dessine la barre de vie
+      this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+      this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
     this.scene.anims.create({
-      key: "enemy_gauche",
+      key: "blob_anim",
       frames: this.scene.anims.generateFrameNumbers("enemi", {
         start: 0,
-        end: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.scene.anims.create({
-      key: "enemy_droite",
-      frames: this.scene.anims.generateFrameNumbers("enemi", {
-        start: 4,
         end: 7,
       }),
       frameRate: 10,
       repeat: -1,
     });
+    this.enemy.play("blob_anim"); // Joue l'animation pour aller à droite
   }
+
   // Gérer la collision avec une plateforme
   handlePlatformCollision() {
     console.log("Collision détectée, changement de direction !");
@@ -53,6 +62,7 @@ export class Blob {
   // Mettre à jour l'ennemi à chaque frame
   update() {
     this.move();
+    this.updateHealthBar(); // Mettre à jour la barre de vie à chaque frame
     if (!this.scene.player.player) return;
     const distanceToPlayer = Phaser.Math.Distance.Between(
       this.enemy.x,
@@ -107,14 +117,11 @@ export class Blob {
 
     // Déplacement de l'ennemi
     this.enemy.setVelocityX(this.speed * this.direction);
-
     // Animation et inversion de l'échelle selon la direction
     if (this.direction === 1) {
-      this.enemy.play("enemy_droite", true); // Joue l'animation pour aller à droite
-      this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
+      this.enemy.setFlipX(true); // Remet à l'échelle normale pour aller à droite
     } else {
-      this.enemy.play("enemy_gauche", true); // Joue l'animation pour aller à gauche
-      this.enemy.setFlipX(true); // Inverse l'échelle pour tourner l'ennemi vers la gauche
+      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
     }
   }
 
@@ -181,8 +188,10 @@ export class Blob {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
@@ -243,7 +252,9 @@ export class CarnivorousPlant {
     this.attackSensor.body.setAllowGravity(false);
     this.attackSensor.body.setImmovable(true);
 
-    // Configurer les animations de la plante
+    this.healthBar = this.scene.add.graphics();
+
+    this.updateHealthBar();
     this.setupAnimations();
 
     // Vérifier les collisions entre le capteur et le joueur
@@ -255,6 +266,21 @@ export class CarnivorousPlant {
       this
     );
     console.log("Capteur d'attaque configuré.");
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 4; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -320,8 +346,10 @@ export class CarnivorousPlant {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
@@ -366,7 +394,26 @@ export class Vine {
     this.lifePoints = 1;
     this.enemy.instance = this;
 
+    this.healthBar = this.scene.add.graphics();
+
+    this.updateHealthBar();
+
     this.setupAnimations();
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 1; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -390,8 +437,10 @@ export class Vine {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   }
@@ -416,10 +465,28 @@ export class Crow {
     this.initialY = y;
     this.direction = -1; // Le corbeau commence en allant vers la gauche
     this.enemy.setFlipX(true);
+    this.healthBar = this.scene.add.graphics();
+
+    this.updateHealthBar();
     this.setupAnimations();
 
     this.isDiving = false;
     this.distanceTraveled = 0; // Nouvelle propriété pour suivre la distance parcourue
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 2; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -555,8 +622,10 @@ export class Crow {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
