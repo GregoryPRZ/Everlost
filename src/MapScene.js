@@ -143,6 +143,7 @@ export class MapScene extends Phaser.Scene {
     // Collisions
     this.physics.add.collider(this.enemies, this.calque_plateformes);
     this.physics.add.collider(this.player.player, this.calque_plateformes);
+    this.physics.add.overlap(this.player.player, this.calque_echelle,() => { this.player.onScaleOverlap(this.calque_echelle);}, null, this);
     this.physics.add.overlap(
       this.player.player,
       this.enemies,
