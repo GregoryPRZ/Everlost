@@ -16,6 +16,9 @@ export class Blob {
     // Limites de déplacement
     this.leftLimit = x - 400; // Limite gauche
     this.rightLimit = x + 100; // Limite droite
+    this.enemy.body.setSize(32, 32);
+    this.enemy.body.setOffset(16, 32);
+
     this.setupAnimations();
   }
 
@@ -132,7 +135,6 @@ export class Blob {
   }
   // Fonction pour faire tirer l'ennemi
   shoot() {
-    console.log("L'ennemi tire !");
     this.scene.sound.play("poisonSound"); // Jouer le son de saut
     // Créer la balle à la position de l'ennemi
     const bullet = this.scene.physics.add.sprite(
@@ -165,6 +167,13 @@ export class Blob {
       // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
       this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
     });
+    this.scene.physics.add.collider(
+      bullet,
+      this.scene.calque_plateformes,
+      () => {
+        bullet.destroy(); // Détruit la balle lorsqu'elle touche une plateforme
+      }
+    );
   }
 
   takeDamage() {
@@ -217,26 +226,39 @@ export class CarnivorousPlant {
     this.isAttacking = false;
     this.lifePoints = 4;
 
-    // Ajouter le sprite avec l'animation statique par défaut
+    // Ajouter le sprite de la plante
     this.enemy = this.scene.physics.add.sprite(x, y, "carnivorous_plant_idle");
     this.enemy.setImmovable(true);
     this.enemy.body.allowGravity = false;
 
-    // Démarrer l'animation idle
-    this.health = 3;
+    // Créer un capteur circulaire autour de la plante
+    this.attackRadius = 80; // Rayon du capteur
+    this.attackSensor = this.scene.add
+      .zone(x, y)
+      .setSize(this.attackRadius * 2, this.attackRadius * 2);
+    this.attackSensor.setOrigin(0.5, 0.5);
 
-    // Vérifier les collisions avec le joueur
-    this.scene.physics.add.overlap(
+    // Activer la physique sur le capteur
+    this.scene.physics.world.enable(this.attackSensor);
+    this.attackSensor.body.setAllowGravity(false);
+    this.attackSensor.body.setImmovable(true);
+
+    // Configurer les animations de la plante
+    this.setupAnimations();
+
+    // Vérifier les collisions entre le capteur et le joueur
+    this.scene.physics.add.collider(
+      this.attackSensor,
       this.player,
       this.startAttack.bind(this),
       null,
       this
     );
-    this.setupAnimations();
+    console.log("Capteur d'attaque configuré.");
   }
 
   setupAnimations() {
-    // Créer les animations pour la plante carnivore
+    // Animation idle
     this.scene.anims.create({
       key: "idle",
       frames: this.scene.anims.generateFrameNumbers("carnivorous_plant_idle", {
@@ -244,9 +266,10 @@ export class CarnivorousPlant {
         end: 3,
       }),
       frameRate: 10,
-      repeat: -1, // L'animation boucle indéfiniment
+      repeat: -1, // L'animation se répète en boucle
     });
 
+    // Animation d'attaque
     this.scene.anims.create({
       key: "attack",
       frames: this.scene.anims.generateFrameNumbers(
@@ -257,37 +280,39 @@ export class CarnivorousPlant {
         }
       ),
       frameRate: 10,
-      repeat: 0, // L'animation joue une seule fois
+      repeat: 0, // L'animation ne se joue qu'une seule fois
     });
+
+    // Lancer l'animation "idle" par défaut
     this.enemy.play("idle");
+    console.log("Animation 'idle' lancée.");
   }
 
   startAttack() {
-    if (this.isAttacking) return;
+    if (this.isAttacking) return; // Si déjà en attaque, ne rien faire
 
-    this.isAttacking = true;
+    this.isAttacking = true; // Indiquer que l'attaque commence
+
+    console.log("L'attaque commence. Animation 'attack' lancée.");
+    // Lancer l'animation d'attaque
     this.enemy.play("attack");
-    this.player.takeDamage(1);
 
-    // Revenir à l'animation statique après l'attaque
-    this.scene.time.delayedCall(1000, this.stopAttack.bind(this));
+    // Infliger des dégâts au joueur
+    this.player.takeDamage(1);
+    console.log("Le joueur subit 1 point de dégâts.");
+
+    // Revenir à l'état "idle" après l'attaque (1 seconde après)
+    this.scene.time.delayedCall(1000, this.stopAttack, [], this);
   }
 
   stopAttack() {
-    this.isAttacking = false;
-    this.enemy.play("idle");
+    this.isAttacking = false; // Attaque terminée
+    this.enemy.play("idle"); // Revenir à l'animation idle
+    console.log("Attaque terminée. Retour à l'animation 'idle'.");
   }
 
   update() {
-    const distance = Phaser.Math.Distance.Between(
-      this.enemy.x,
-      this.enemy.y,
-      this.player.x,
-      this.player.y
-    );
-    if (distance < 100 && !this.isAttacking) {
-      this.startAttack();
-    }
+    // Aucune vérification manuelle ici, car l'overlap est géré par Phaser
   }
 
   takeDamage() {
@@ -376,26 +401,25 @@ export class Crow {
   constructor(scene, x, y, player) {
     this.scene = scene;
     this.player = player;
-    this.isDiving = false;
-    this.attackCooldown = false;
     this.lifePoints = 2;
 
     // Ajouter le sprite du corbeau avec l'animation de vol par défaut
     this.enemy = this.scene.physics.add.sprite(x, y, "crow_fly");
     this.enemy.setImmovable(false);
-    console.log(this);
+    this.enemy.body.setSize(32, 32);
+    this.enemy.body.setOffset(12, 20);
+    this.enemy.body.allowGravity = false;
 
-    this.enemy.body.allowGravity = false; // Le corbeau n'est pas affecté par la gravité
-
-    // Définir les propriétés
     this.health = 1;
-
-    // Définir la vitesse de déplacement du corbeau
-    this.speed = -100; // Vitesse de vol horizontale vers la gauche
-
-    // Assurer que le enemy est orienté pour voler vers la gauche
+    this.speed = 100;
+    this.initialX = x;
+    this.initialY = y;
+    this.direction = -1; // Le corbeau commence en allant vers la gauche
     this.enemy.setFlipX(true);
     this.setupAnimations();
+
+    this.isDiving = false;
+    this.distanceTraveled = 0; // Nouvelle propriété pour suivre la distance parcourue
   }
 
   setupAnimations() {
@@ -406,9 +430,8 @@ export class Crow {
         end: 3,
       }),
       frameRate: 6,
-      repeat: -1, // Boucle infinie pour l'animation de vol
+      repeat: -1,
     });
-
     this.scene.anims.create({
       key: "dive",
       frames: this.scene.anims.generateFrameNumbers("crow_dive", {
@@ -416,87 +439,115 @@ export class Crow {
         end: 2,
       }),
       frameRate: 10,
-      repeat: 0, // Joue une seule fois pour l'attaque
+      repeat: 0,
     });
-
     this.enemy.play("fly");
   }
 
-  diveAttack() {
-    if (!this.isDiving && !this.attackCooldown) {
-      this.isDiving = true;
-      this.attackCooldown = true;
+  update() {
+    if (this.isDiving) {
+      return;
+    }
 
-      // Déclencher l'animation d'attaque
-      this.enemy.play("dive");
+    const displacement =
+      (this.speed * this.direction * this.scene.game.loop.delta) / 1000;
 
-      // Calculer la direction pour plonger vers le joueur
-      const targetX = this.player.x;
-      const targetY = this.player.y + 50; // Ajuster la position cible pour imiter une attaque en piqué
+    // Mise à jour de la position du corbeau
+    this.enemy.x += displacement;
 
-      // Faire plonger le corbeau vers le joueur
-      this.scene.tweens.add({
-        targets: this.enemy,
-        x: targetX,
-        y: targetY,
-        duration: 500,
-        ease: "Power1",
-        onComplete: () => {
-          // Infliger des dégâts au joueur lors de l'impact
-          this.player.takeDamage(1);
+    this.distanceTraveled += Math.abs(displacement);
 
-          // Remonter le corbeau après l'attaque
-          this.flyUp();
-        },
-      });
+    if (this.distanceTraveled >= 150) {
+      this.direction *= -1;
+      this.enemy.setFlipX(this.direction === 1);
+      this.distanceTraveled = 0;
+    } else {
+      this.enemy.setFlipX(this.direction === -1);
+    }
+
+    // Stockez l'ancienne position y pour la hitbox
+    const hitboxY = this.initialY;
+
+    // Réinitialiser la position y de la hitbox à sa position originale
+    this.enemy.body.position.y = hitboxY;
+
+    const distanceToPlayer = Phaser.Math.Distance.Between(
+      this.enemy.x,
+      this.enemy.y,
+      this.player.x,
+      this.player.y
+    );
+
+    if (distanceToPlayer < 200 && this.health > 0 && !this.isDiving) {
+      this.startDiveAttack();
     }
   }
 
-  flyUp() {
-    // Faire remonter le corbeau après l'attaque
-    const originalY = this.enemy.y - 150; // Remonte de 150 pixels vers le haut
-    this.scene.tweens.add({
-      targets: this.enemy,
-      y: originalY,
-      duration: 500,
-      ease: "Power1",
-      onComplete: () => {
-        this.isDiving = false;
+  startDiveAttack() {
+    console.log("Start dive attack triggered");
 
-        // Revenir à l'animation de vol
-        this.enemy.play("fly");
+    this.isDiving = true;
+    this.enemy.play("dive");
+    console.log("Diving animation started");
 
-        // Ajouter un délai avant la prochaine attaque
-        this.scene.time.delayedCall(4000, () => {
-          this.attackCooldown = false;
-        });
-      },
+    // Calculer l'angle vers le joueur
+    const angle = Phaser.Math.Angle.Between(
+      this.enemy.x,
+      this.enemy.y,
+      this.player.x,
+      this.player.y
+    );
+    console.log(`Angle towards player: ${angle}`);
+
+    // Ajuster l'orientation du corbeau en fonction de la direction de l'attaque
+    this.enemy.setFlipX(Math.cos(angle) > 0);
+    console.log(`Crow flipX set to: ${Math.cos(angle) > 0}`);
+
+    // Lancer le mouvement de plongée vers le joueur
+    console.log("Crow velocity before dive: ", this.enemy.body.velocity);
+    this.scene.physics.velocityFromRotation(
+      angle,
+      200,
+      this.enemy.body.velocity
+    );
+    console.log(
+      "Crow is diving towards player with velocity:",
+      this.enemy.body.velocity
+    );
+
+    // Lorsque l'attaque est terminée (après un délai ou une collision)
+    this.scene.time.delayedCall(1000, () => {
+      console.log("Dive attack finished, returning to initial position");
+
+      // Retourner à la position initiale
+      this.isDiving = false;
+      this.enemy.play("fly");
+      console.log("Flying animation restarted");
+
+      this.scene.physics.moveTo(this.enemy, this.initialX, this.initialY, 100);
+      console.log(
+        "Crow moving back to initial position:",
+        this.initialX,
+        this.initialY
+      );
     });
   }
 
-  update() {
-    // Déplacer le corbeau continuellement vers la gauche
-    if (!this.isDiving) {
-      this.enemy.setVelocityX(this.speed);
+  endDiveAttack() {
+    console.log("End dive attack triggered");
 
-      // Si le corbeau sort par la gauche de la scène, le repositionner à droite
-      if (this.enemy.x < -50) {
-        this.enemy.x = this.scene.scale.width + 50; // Réapparaît à droite, hors de la vue
-      }
+    this.isDiving = false;
+    this.enemy.play("fly");
+    console.log("Flying animation restarted");
 
-      // Vérifier la proximité avec le joueur pour déclencher l'attaque
-      const distanceToPlayer = Phaser.Math.Distance.Between(
-        this.enemy.x,
-        this.enemy.y,
-        this.player.x,
-        this.player.y
-      );
+    this.enemy.setVelocity(0);
+    console.log("Crow velocity reset to 0");
 
-      // Si le corbeau est à portée de 200 pixels du joueur, il attaque
-      if (distanceToPlayer < 200 && !this.isDiving && !this.attackCooldown) {
-        this.diveAttack();
-      }
-    }
+    this.initialY = this.enemy.y;
+    console.log("Crow's initialY updated to:", this.initialY);
+
+    this.distanceTraveled = 0; // Réinitialiser la distance parcourue
+    console.log("Distance traveled reset to 0");
   }
 
   takeDamage() {

@@ -18,7 +18,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("start", "src/assets/buttons/Start.png");
     this.load.image("retour", "src/assets/buttons/retour.png");
 
-    this.load.audio('buttonClick', 'src/assets/sounds/se_click.mp3');
+    this.load.audio("buttonClick", "src/assets/sounds/se_click.mp3");
 
     this.load.image("tuilesJeu", "src/assets/tuilesJeu.png");
     this.load.image("bullet", "src/assets/enemy/bullet.png");
@@ -44,36 +44,57 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 64,
     });
 
+    this.load.spritesheet("blob_attack", "src/assets/enemy/blob_attack.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
+
     //lianes
     this.load.spritesheet("vine", "src/assets/enemy/ground_vine.png", {
       frameWidth: 16,
       frameHeight: 32,
     });
 
-    this.load.spritesheet("player_marche", "src/assets/player/player_walking.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
+    this.load.spritesheet(
+      "player_marche",
+      "src/assets/player/player_walking.png",
+      {
+        frameWidth: 64,
+        frameHeight: 64,
+      }
+    );
 
-    this.load.spritesheet("player_debout", "src/assets/player/player_idle.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
+    this.load.spritesheet(
+      "player_debout",
+      "src/assets/player/player_idle.png",
+      {
+        frameWidth: 64,
+        frameHeight: 64,
+      }
+    );
 
-    this.load.spritesheet("player_crouch", "src/assets/player/player_crouch.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
+    this.load.spritesheet(
+      "player_crouch",
+      "src/assets/player/player_crouch.png",
+      {
+        frameWidth: 64,
+        frameHeight: 64,
+      }
+    );
 
     this.load.spritesheet("player_jump", "src/assets/player/player_jump.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
 
-    this.load.spritesheet("player_attack", "src/assets/player/player_attack.png", {
-      frameWidth: 96,
-      frameHeight: 64,
-    });
+    this.load.spritesheet(
+      "player_attack",
+      "src/assets/player/player_attack.png",
+      {
+        frameWidth: 96,
+        frameHeight: 64,
+      }
+    );
 
     this.load.spritesheet("player_dash", "src/assets/player/player_dash.png", {
       frameWidth: 64,
@@ -102,15 +123,15 @@ export class PreloadScene extends Phaser.Scene {
       }
     );
 
-//----------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------
     // Charger la spritesheet pour le vol du corbeau
-    this.load.spritesheet('crow_fly', 'src/assets/enemy/crow_move.png', {
+    this.load.spritesheet("crow_fly", "src/assets/enemy/crow_move.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
 
     // Charger la spritesheet pour l'attaque en piqué du corbeau
-    this.load.spritesheet('crow_dive', 'src/assets/enemy/crow_attack.png', {
+    this.load.spritesheet("crow_dive", "src/assets/enemy/crow_attack.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
@@ -139,9 +160,7 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32,
     });
-
-
-}
+  }
 
   create() {
     this.scene.start("SceneMenu");
