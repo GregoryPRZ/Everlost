@@ -240,32 +240,14 @@ export class CarnivorousPlant {
     this.enemy.setImmovable(true);
     this.enemy.body.allowGravity = false;
 
-    // Créer un capteur circulaire autour de la plante
-    this.attackRadius = 80; // Rayon du capteur
-    this.attackSensor = this.scene.add
-      .zone(x, y)
-      .setSize(this.attackRadius * 2, this.attackRadius * 2);
-    this.attackSensor.setOrigin(0.5, 0.5);
-
-    // Activer la physique sur le capteur
-    this.scene.physics.world.enable(this.attackSensor);
-    this.attackSensor.body.setAllowGravity(false);
-    this.attackSensor.body.setImmovable(true);
-
     this.healthBar = this.scene.add.graphics();
+  
+    // Propriétés pour le tir
+    this.shootCooldown = 2000; // Délai entre les tirs en millisecondes
+    this.lastShotTime = 0; // Dernière fois où la plante a tiré
 
     this.updateHealthBar();
     this.setupAnimations();
-
-    // Vérifier les collisions entre le capteur et le joueur
-    this.scene.physics.add.collider(
-      this.attackSensor,
-      this.player,
-      this.startAttack.bind(this),
-      null,
-      this
-    );
-    console.log("Capteur d'attaque configuré.");
   }
 
   updateHealthBar() {
@@ -314,32 +296,84 @@ export class CarnivorousPlant {
     console.log("Animation 'idle' lancée.");
   }
 
-  startAttack() {
-    if (this.isAttacking) return; // Si déjà en attaque, ne rien faire
-
-    this.isAttacking = true; // Indiquer que l'attaque commence
-
-    console.log("L'attaque commence. Animation 'attack' lancée.");
-    // Lancer l'animation d'attaque
-    this.enemy.play("attack");
-
-    // Infliger des dégâts au joueur
-    this.player.takeDamage(1);
-    console.log("Le joueur subit 1 point de dégâts.");
-
-    // Revenir à l'état "idle" après l'attaque (1 seconde après)
-    this.scene.time.delayedCall(1000, this.stopAttack, [], this);
-  }
-
-  stopAttack() {
-    this.isAttacking = false; // Attaque terminée
-    this.enemy.play("idle"); // Revenir à l'animation idle
-    console.log("Attaque terminée. Retour à l'animation 'idle'.");
-  }
-
   update() {
-    // Aucune vérification manuelle ici, car l'overlap est géré par Phaser
+    if (!this.scene.player.player) return; // Assurez-vous que le joueur existe
+    this.enemy.flipX = this.scene.player.player.x > this.enemy.x; // Si le joueur est à gauche, flipX = true
+
+    const distanceToPlayer = Phaser.Math.Distance.Between(
+      this.enemy.x,
+      this.enemy.y,
+      this.scene.player.player.x,
+      this.scene.player.player.y
+    ); // Accès à la position du joueur
+
+    // Vérifier si le joueur est à portée et si le délai entre les tirs est respecté
+    if (
+      distanceToPlayer < 300 &&
+      this.scene.time.now > this.lastShotTime + this.shootCooldown
+    ) {
+      this.shoot();
+      this.lastShotTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
+    }
   }
+
+  shoot() {
+    this.scene.sound.play('poisonSound'); // Jouer le son d'attaque
+    this.enemy.play("attack", true);
+    // Créer une balle à la position actuelle du joueur
+    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y, 'bullet');
+
+  // Vérifier la direction du joueur et ajuster la vitesse de la balle
+  const direction = this.enemy.flipX ? 1 : -1; // Si le joueur est orienté à gauche, la balle va à gauche
+
+  bullet.startX = this.enemy.x;
+  const maxDistance = 300; // Distance maximale que la balle peut parcourir (ajuster selon besoin)
+
+  bullet.setVelocityX(200 * direction); // Vitesse de la balle (600 peut être ajusté)
+  
+  // Assurer que la balle ne soit pas affectée par la gravité
+  bullet.body.setAllowGravity(false);
+
+  // Détruire la balle lorsqu'elle sort des limites du monde
+  bullet.setCollideWorldBounds(true);
+  bullet.body.onWorldBounds = true;
+  bullet.body.world.on('worldbounds', () => {
+    bullet.destroy(); // Supprimer la balle lorsqu'elle sort du cadre
+  });
+
+  // Ajouter une fonction de mise à jour pour vérifier la distance parcourue
+  bullet.update = () => {
+    const distanceTravelled = Math.abs(bullet.x - bullet.startX);
+    if (distanceTravelled > maxDistance) {
+      bullet.destroy(); // Détruire la balle si elle dépasse la distance maximale
+    }
+  };
+
+  this.scene.physics.world.on('worldstep', () => {
+    if (bullet.active) {
+      bullet.update();
+    }
+  });
+
+
+    // Gérer la collision entre la balle et le joueur
+    this.scene.physics.add.collider(bullet, this.scene.player.player, () => {
+      console.log("Le joueur est touché !");
+      bullet.destroy(); // Détruit la balle lorsqu'elle touche le joueur
+      // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
+      this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
+    });
+    this.scene.physics.add.collider(
+      bullet,
+      this.scene.calque_plateformes,
+      () => {
+        bullet.destroy(); // Détruit la balle lorsqu'elle touche une plateforme
+      }
+    );
+
+  // Désactiver toute interaction physique (poussée) entre la balle et l'ennemi
+  bullet.body.setImmovable(true); // La balle ne bouge pas lorsqu'elle touche un ennemi
+}
 
   takeDamage() {
     if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
