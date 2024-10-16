@@ -15,6 +15,9 @@ export class MapScene extends Phaser.Scene {
     this.enemies = null; // Pour stocker les ennemis
     this.enemyObjects = [];
     this.objects = []; // Nouveau tableau pour stocker les objets
+    this.totalEnemies = 0; // Nombre total d'ennemis
+    this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
+    this.enemyText = null; // Texte pour afficher le compteur
   }
 
   preload() {
@@ -94,6 +97,15 @@ export class MapScene extends Phaser.Scene {
     const enemyObjects =
       this.carteDuNiveau.getObjectLayer("calque_ennemis").objects;
 
+    this.totalEnemies = enemyObjects.length; // Nombre total d'ennemis au début
+    this.defeatedEnemies = 0; // Initialiser le nombre d'ennemis vaincus à 0
+
+    // Ajouter un texte en haut à gauche pour afficher le compteur d'ennemis
+    this.enemyText = this.add.text(16, 75, `Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`, {
+      fontSize: '20px',
+      fill: '#ffffff'
+    }).setScrollFactor(0); // Le texte ne bouge pas avec la caméra
+
     // Utiliser enemyObjects pour placer les ennemis
     enemyObjects.forEach((enemyData) => {
       const enemyType = enemyData.properties.find(
@@ -135,6 +147,12 @@ export class MapScene extends Phaser.Scene {
 
         // Stocker l'instance complète dans une propriété de sprite pour la mise à jour
         enemy.enemy.instance = enemy;
+
+        // Ajouter un événement quand un ennemi est vaincu
+        enemy.enemy.on('destroy', () => {
+          this.defeatedEnemies++; // Incrémenter le nombre d'ennemis vaincus
+          this.updateEnemyText(); // Mettre à jour le texte d'ennemis
+        });
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
         console.log("Enemy created and added to group:", enemy);
@@ -237,6 +255,26 @@ export class MapScene extends Phaser.Scene {
         enemySprite.instance.update(); // Appeler la méthode update de l'instance complète
       }
     });
+
+  // Vérifier si tous les ennemis sont battus
+    if (this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
+      this.checkVictoryCondition(); // Appelle une méthode pour gérer la fin
+    }
+  }
+
+  checkVictoryCondition() {
+    if (this.player.hasDiamondHeart) {
+      // Si le joueur a le cœur de diamant, passer à une fin spéciale
+      this.scene.start("SpecialEnding");
+    } else {
+      // Sinon, passer à une fin normale
+      this.scene.start("NormalEnding");
+    }
+  }
+
+  updateEnemyText() {
+    // Met à jour le texte pour afficher le nombre d'ennemis restants et battus
+    this.enemyText.setText(`Enemies: ${this.defeatedEnemies}/${this.totalEnemies}`);
   }
 
   updateLifeDisplay() {
