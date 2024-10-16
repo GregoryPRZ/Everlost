@@ -1,20 +1,10 @@
-export class Enemy {
+export class Blob {
   constructor(scene, x, y, texture, calque_plateformes) {
     this.scene = scene;
 
     // Initialisation de l'ennemi
     this.enemy = this.scene.physics.add.sprite(x, y, texture);
-    this.enemy.setCollideWorldBounds(true);
     this.enemy.setGravityY(300);
-
-    // Collision avec le calque de plateformes
-    this.scene.physics.add.collider(
-      this.enemy,
-      calque_plateformes,
-      this.handlePlatformCollision,
-      null,
-      this
-    );
 
     // Propriétés du comportement
     this.speed = 100;
@@ -25,6 +15,23 @@ export class Enemy {
     // Limites de déplacement
     this.leftLimit = x - 400; // Limite gauche
     this.rightLimit = x + 100; // Limite droite
+    this.setupAnimations();
+  }
+
+  setupAnimations(){
+    this.scene.anims.create({
+      key: "enemy_gauche",
+      frames: this.scene.anims.generateFrameNumbers("enemi", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.scene.anims.create({
+      key: "enemy_droite",
+      frames: this.scene.anims.generateFrameNumbers("enemi", { start: 4, end: 7 }),
+      frameRate: 10,
+      repeat: -1,
+    });
   }
    // Gérer la collision avec une plateforme
    handlePlatformCollision() {
@@ -131,5 +138,193 @@ export class Enemy {
         // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
         this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
     });
+  }
+}
+
+
+
+export class CarnivorousPlant {
+  constructor(scene, x, y, player) {
+    this.scene = scene;
+    this.player = player;
+    this.isAttacking = false;
+
+    // Ajouter le sprite avec l'animation statique par défaut
+    this.enemy = this.scene.physics.add.sprite(x, y, 'carnivorous_plant_idle');
+    this.enemy.setImmovable(true);
+    this.enemy.body.allowGravity = false;
+
+    // Démarrer l'animation idle
+    this.health = 3;
+
+    // Vérifier les collisions avec le joueur
+    this.scene.physics.add.overlap(this.player, this.startAttack.bind(this), null, this);
+    this.setupAnimations();
+  }
+
+  setupAnimations(){
+    // Créer les animations pour la plante carnivore
+    this.scene.anims.create({
+      key: "idle",
+      frames: this.scene.anims.generateFrameNumbers("carnivorous_plant_idle", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1, // L'animation boucle indéfiniment
+    });
+
+    this.scene.anims.create({
+      key: "attack",
+      frames: this.scene.anims.generateFrameNumbers("carnivorous_plant_attack", {
+        start: 0,
+        end: 7,
+      }),
+      frameRate: 10,
+      repeat: 0, // L'animation joue une seule fois
+    });
+    this.enemy.play('idle');
+  }
+
+  startAttack() {
+    if (this.isAttacking) return;
+
+    this.isAttacking = true;
+    this.enemy.play('attack');
+    this.player.takeDamage(1);
+
+    // Revenir à l'animation statique après l'attaque
+    this.scene.time.delayedCall(1000, this.stopAttack.bind(this));
+  }
+
+  stopAttack() {
+    this.isAttacking = false;
+    this.enemy.play('idle');
+  }
+
+  update() {
+    const distance = Phaser.Math.Distance.Between(this.enemy.x, this.enemy.y, this.player.x, this.player.y);
+    if (distance < 100 && !this.isAttacking) {
+      this.startAttack();
+    }
+  }
+}
+
+  
+export class Vine {
+  constructor(scene, x, y, texture) {
+    this.scene = scene;
+    this.enemy = this.scene.physics.add.sprite(x, y, texture);
+    this.enemy.body.setAllowGravity(false);
+
+    this.setupAnimations();
+  }
+
+  setupAnimations() {
+    this.scene.anims.create({
+      key: 'swaying_vine',
+      frames: this.scene.anims.generateFrameNumbers('vine', { start: 0, end: 7 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    this.enemy.play('swaying_vine');
+  }
+
+  update() {}
+}
+
+
+export class Crow {
+  constructor(scene, x, y, player) {
+    this.scene = scene;
+    this.player = player;
+    this.isDiving = false;
+    this.attackCooldown = false;
+
+    // Ajouter le sprite du corbeau
+    this.enemy = this.scene.physics.add.sprite(x, y, 'crow_fly');
+    this.enemy.setImmovable(false);
+    this.enemy.body.allowGravity = false;
+
+    this.health = 1;
+    this.speed = 100;
+
+    // Vérifier les collisions avec le joueur
+    this.scene.physics.add.overlap(this.player, this.diveAttack.bind(this), null, this);
+    this.setupAnimations();
+  }
+
+  setupAnimations() {
+    this.scene.anims.create({
+      key: 'fly',
+      frames: this.scene.anims.generateFrameNumbers('crow_fly', { start: 0, end: 3 }),
+      frameRate: 6,
+      repeat: -1 // Boucle infinie pour l'animation de vol
+    });
+
+    this.scene.anims.create({
+      key: 'dive',
+      frames: this.scene.anims.generateFrameNumbers('crow_dive', { start: 0, end: 2 }),
+      frameRate: 10,
+      repeat: 0 // Joue une seule fois pour l'attaque
+    });
+    
+    this.enemy.play('fly');
+  }
+
+  diveAttack() {
+    if (this.isDiving || this.attackCooldown) return;
+
+    this.isDiving = true;
+    this.attackCooldown = true;
+
+    this.enemy.play('dive');
+
+    const targetY = this.player.y + 50;
+
+    this.scene.tweens.add({
+      targets: this.enemy,
+      x: this.player.x,
+      y: targetY,
+      duration: 500,
+      ease: 'Power1',
+      onComplete: () => {
+        this.player.takeDamage(1);
+        this.flyUp();
+      }
+    });
+  }
+
+  flyUp() {
+    this.scene.tweens.add({
+      targets: this.enemy,
+      y: this.enemy.y - 150,
+      duration: 500,
+      ease: 'Power1',
+      onComplete: () => {
+        this.isDiving = false;
+        this.enemy.play('fly');
+
+        // Délai avant la prochaine attaque
+        this.scene.time.delayedCall(4000, () => {
+          this.attackCooldown = false;
+        });
+      }
+    });
+  }
+
+  update() {
+    if (!this.isDiving) {
+      this.enemy.setVelocityX(this.speed);
+      this.checkBounds();
+    }
+  }
+
+  checkBounds() {
+    if (this.enemy.x > this.scene.scale.width - 50 || this.enemy.x < 50) {
+      this.speed = -this.speed;
+      this.enemy.flipX = !this.enemy.flipX;
+    }
   }
 }
