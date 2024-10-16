@@ -3,8 +3,7 @@ export class Crow {
     this.scene = scene;
     this.player = player;
     this.isDiving = false;
-    this.attackCooldown = false; // Pour empêcher l'attaque multiple sans pause
-    
+    this.attackCooldown = false;
     
     // Ajouter le sprite du corbeau avec l'animation de vol par défaut
     this.sprite = this.scene.physics.add.sprite(x, y, 'crow_fly');
@@ -18,17 +17,10 @@ export class Crow {
     this.sprite.play('fly');
 
     // Définir la vitesse de déplacement du corbeau
-    this.speed = 100; // Vitesse de vol horizontale
+    this.speed = -100; // Vitesse de vol horizontale vers la gauche
 
-    // Ajouter un détecteur de proximité
-    /*this.proximitySensor = this.scene.add.circle(x, y, 200); // Rayon de détection de 200 pixels
-    this.scene.physics.add.existing(this.proximitySensor);
-    this.proximitySensor.body.setCircle(200);
-    this.proximitySensor.body.setAllowGravity(false);
-    this.proximitySensor.body.setImmovable(true);*/
-
-    // Vérifier les collisions avec le joueur
-    this.scene.physics.add.overlap(this.player, this.diveAttack, null, this);
+    // Assurer que le sprite est orienté pour voler vers la gauche
+    this.sprite.setFlipX(true);
   }
 
   diveAttack() {
@@ -84,14 +76,23 @@ export class Crow {
   }
 
   update() {
-    // Déplacer le corbeau horizontalement
+    // Déplacer le corbeau continuellement vers la gauche
     if (!this.isDiving) {
       this.sprite.setVelocityX(this.speed);
-      
-      // Faire changer de direction lorsqu'il atteint les bords de la scène
-      if (this.sprite.x > this.scene.scale.width - 50 || this.sprite.x < 50) {
-        this.speed = -this.speed; // Inverser la direction
-        this.sprite.flipX = !this.sprite.flipX; // Retourner le sprite
+
+      // Si le corbeau sort par la gauche de la scène, le repositionner à droite
+      if (this.sprite.x < -50) {
+        this.sprite.x = this.scene.scale.width + 50; // Réapparaît à droite, hors de la vue
+      }
+
+      // Vérifier la proximité avec le joueur pour déclencher l'attaque
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.sprite.x, this.sprite.y, this.player.x, this.player.y
+      );
+
+      // Si le corbeau est à portée de 200 pixels du joueur, il attaque
+      if (distanceToPlayer < 200 && !this.isDiving && !this.attackCooldown) {
+        this.diveAttack();
       }
     }
   }

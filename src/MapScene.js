@@ -257,7 +257,15 @@ export class MapScene extends Phaser.Scene {
     });
 
     //instance du corbeau
-    this.crow = new Crow(this, 800, 5800, this.player);
+    this.crow = new Crow(this, 800, 5870, this.player);
+     // Détecter la collision entre le joueur et la vigne
+     this.physics.add.overlap(this.player.player, this.crow.sprite, () => {
+      // Appelle la méthode takeDamage lorsque le joueur touche la vigne
+      this.player.takeDamage();
+      
+      // Faire clignoter le joueur
+      this.player.blinkRed();
+    }, null, this);
     //----------------------------------------------------------------------
 
     // Ajoutez les collisions si nécessaire
