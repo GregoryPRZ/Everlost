@@ -231,3 +231,48 @@ export class Boots {
       // Les bottes ne bougent pas, mais cette fonction est là si vous avez besoin de la mettre à jour
     }
   }
+
+  export class DreamSword {
+    constructor(scene, x, y, calque_plateformes, player) {
+      this.scene = scene;
+      this.sword = this.scene.physics.add.sprite(x, y, 'upgraded_sword');
+      this.sword.setGravityY(0); // Les bottes ne subissent pas la gravité
+      this.sword.body.setAllowGravity(false); // Les bottes ne subissent pas la gravité
+  
+      // Ajout d'une collision avec les plateformes
+      this.scene.physics.add.collider(this.sword, calque_plateformes);
+  
+      // Ajouter la détection de chevauchement entre les bottes et le joueur
+      this.scene.physics.add.overlap(player.player, this.sword, () => {
+        player.collectSword(); // Appliquer l'effet des bottes au joueur
+        this.destroy(); // Supprimer les bottes après la collecte
+      });
+  
+      // Setup d'animations si nécessaire
+      this.setupAnimations();
+    }
+  
+    setupAnimations() {
+      // Si vous avez une animation pour les bottes
+      this.scene.anims.create({
+        key: 'upgraded_sword_anim',
+        frames: this.scene.anims.generateFrameNumbers('upgraded_sword', { start: 0, end: 3 }),
+        frameRate: 5,
+        repeat: -1
+      });
+  
+      this.sword.play('upgraded_sword_anim');
+    }
+  
+    // Détruire les bottes
+    destroy() {
+      if (this.sword) {
+        this.sword.destroy(); // Supprimer l'objet des bottes
+      }
+    }
+  
+    // Mettre à jour si nécessaire
+    update() {
+      // Les bottes ne bougent pas, mais cette fonction est là si vous avez besoin de la mettre à jour
+    }
+  }

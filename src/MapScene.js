@@ -1,5 +1,5 @@
 import { Blob, CarnivorousPlant, Vine, Crow } from "./enemy.js";
-import { Boots, Dash, Heart, DiamondHeart, Sword} from "./objects.js";
+import { Boots, Dash, Heart, DiamondHeart, Sword, DreamSword} from "./objects.js";
 import { Player } from "./Player.js"; 
 
 export class MapScene extends Phaser.Scene {
@@ -32,6 +32,7 @@ export class MapScene extends Phaser.Scene {
     this.load.audio("stepSound", "src/assets/sounds/se_step.mp3");
     this.load.audio("hurtSound", "src/assets/sounds/se_hurt.mp3");
     this.load.audio("objectSound", "src/assets/sounds/se_objet.mp3");
+    this.load.audio("shootSound", "src/assets/sounds/se_shoot_sword.mp3");
   }
 
   create() {
@@ -151,7 +152,9 @@ export class MapScene extends Phaser.Scene {
         // Ajouter un événement quand un ennemi est vaincu
         enemy.enemy.on('destroy', () => {
           this.defeatedEnemies++; // Incrémenter le nombre d'ennemis vaincus
-          this.updateEnemyText(); // Mettre à jour le texte d'ennemis
+          if (this.player){
+            this.updateEnemyText(); // Mettre à jour le texte d'ennemis
+          }
         });
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
@@ -185,6 +188,9 @@ export class MapScene extends Phaser.Scene {
       case 'sword':
         object = new Sword(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
         break;
+      case 'dream_sword':
+        object = new DreamSword(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
     }
   
     if (object) {
@@ -200,6 +206,8 @@ export class MapScene extends Phaser.Scene {
           this.player.collectDiamondHeart();
         } else if (objectType === "sword") {
           this.player.collectSword();
+        } else if (objectType === "dream_sword") {
+          this.player.collectDreamSword();
         }
         object.destroy(); // Supprime l'objet ramassé
       });
@@ -274,19 +282,26 @@ export class MapScene extends Phaser.Scene {
   }
 
   updateEnemyText() {
-    if (this.enemyText) {
-      this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
+    console.log("Vérification du joueur :", this.player);
+    console.log("Vérification du texte des ennemis :", this.enemyText);
+    if (this.player) { // Vérifie si le joueur existe
+        if (this.enemyText) {
+            this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
+        } else {
+            console.warn("Le texte des ennemis battus n'existe pas encore ou a été détruit.");
+        }
     } else {
-      console.warn("Le texte des ennemis battus n'existe pas encore ou a été détruit.");
+        console.warn("Le joueur a été détruit, le texte des ennemis ne sera pas mis à jour.");
     }
-  }
+}
+
 
   updateLifeDisplay() {
     // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
     const lifePoints = this.player.lifePoints;
 
     // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints === 5) {
+    if (lifePoints >= 5) {
       this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
       this.lifeBar.setTexture("1hit");
