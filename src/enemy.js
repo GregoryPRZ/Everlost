@@ -114,7 +114,7 @@ export class Blob {
     console.log("L'ennemi tire !");
     this.scene.sound.play('poisonSound'); // Jouer le son de saut
     // Créer la balle à la position de l'ennemi
-    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y, "bullet_texture");
+    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y, "bullet");
 
     // Calculer le vecteur directionnel vers le joueur
     const playerX = this.scene.player.player.x;
@@ -240,18 +240,29 @@ export class Crow {
     this.scene = scene;
     this.player = player;
     this.isDiving = false;
-    this.attackCooldown = false;
-
-    // Ajouter le sprite du corbeau
+    this.attackCooldown = false; // Pour empêcher l'attaque multiple sans pause
+    
+    
+    // Ajouter le sprite du corbeau avec l'animation de vol par défaut
     this.enemy = this.scene.physics.add.sprite(x, y, 'crow_fly');
     this.enemy.setImmovable(false);
-    this.enemy.body.allowGravity = false;
+    this.enemy.body.allowGravity = false; // Le corbeau n'est pas affecté par la gravité
 
+    // Définir les propriétés
     this.health = 1;
-    this.speed = 100;
+
+    // Définir la vitesse de déplacement du corbeau
+    this.speed = 100; // Vitesse de vol horizontale
+
+    // Ajouter un détecteur de proximité
+    /*this.proximitySensor = this.scene.add.circle(x, y, 200); // Rayon de détection de 200 pixels
+    this.scene.physics.add.existing(this.proximitySensor);
+    this.proximitySensor.body.setCircle(200);
+    this.proximitySensor.body.setAllowGravity(false);
+    this.proximitySensor.body.setImmovable(true);*/
 
     // Vérifier les collisions avec le joueur
-    this.scene.physics.add.overlap(this.player, this.diveAttack.bind(this), null, this);
+    this.scene.physics.add.overlap(this.player, this.diveAttack, null, this);
     this.setupAnimations();
   }
 
@@ -274,39 +285,50 @@ export class Crow {
   }
 
   diveAttack() {
-    if (this.isDiving || this.attackCooldown) return;
+    if (!this.isDiving && !this.attackCooldown) {
+      this.isDiving = true;
+      this.attackCooldown = true;
+      
+      // Déclencher l'animation d'attaque
+      this.enemy.play('dive');
 
-    this.isDiving = true;
-    this.attackCooldown = true;
+      // Calculer la direction pour plonger vers le joueur
+      const targetX = this.player.x;
+      const targetY = this.player.y + 50; // Ajuster la position cible pour imiter une attaque en piqué
 
-    this.enemy.play('dive');
-
-    const targetY = this.player.y + 50;
-
-    this.scene.tweens.add({
-      targets: this.enemy,
-      x: this.player.x,
-      y: targetY,
-      duration: 500,
-      ease: 'Power1',
-      onComplete: () => {
-        this.player.takeDamage(1);
-        this.flyUp();
-      }
-    });
+      // Faire plonger le corbeau vers le joueur
+      this.scene.tweens.add({
+        targets: this.enemy,
+        x: targetX,
+        y: targetY,
+        duration: 500,
+        ease: 'Power1',
+        onComplete: () => {
+          // Infliger des dégâts au joueur lors de l'impact
+          this.player.takeDamage(1);
+          
+          // Remonter le corbeau après l'attaque
+          this.flyUp();
+        }
+      });
+    }
   }
 
   flyUp() {
+    // Faire remonter le corbeau après l'attaque
+    const originalY = this.enemy.y - 150; // Remonte de 150 pixels vers le haut
     this.scene.tweens.add({
       targets: this.enemy,
-      y: this.enemy.y - 150,
+      y: originalY,
       duration: 500,
       ease: 'Power1',
       onComplete: () => {
         this.isDiving = false;
+        
+        // Revenir à l'animation de vol
         this.enemy.play('fly');
 
-        // Délai avant la prochaine attaque
+        // Ajouter un délai avant la prochaine attaque
         this.scene.time.delayedCall(4000, () => {
           this.attackCooldown = false;
         });
@@ -315,16 +337,15 @@ export class Crow {
   }
 
   update() {
+    // Déplacer le corbeau horizontalement
     if (!this.isDiving) {
       this.enemy.setVelocityX(this.speed);
-      this.checkBounds();
-    }
-  }
-
-  checkBounds() {
-    if (this.enemy.x > this.scene.scale.width - 50 || this.enemy.x < 50) {
-      this.speed = -this.speed;
-      this.enemy.flipX = !this.enemy.flipX;
+      
+      // Faire changer de direction lorsqu'il atteint les bords de la scène
+      if (this.enemy.x > this.scene.scale.width - 50 || this.enemy.x < 50) {
+        this.speed = -this.speed; // Inverser la direction
+        this.enemy.flipX = !this.enemy.flipX; // Retourner le sprite
+      }
     }
   }
 }

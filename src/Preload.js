@@ -118,7 +118,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("bullet_texture", "src/assets/Bullet.png");
 
 
- 
+}
 
   create() {
     this.scene.start("SceneMenu");
