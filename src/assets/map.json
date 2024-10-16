@@ -1142,24 +1142,6 @@
                 }, 
                 {
                  "height":0,
-                 "id":62,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemyType",
-                         "type":"string",
-                         "value":"vine"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":6379.47608747897,
-                 "y":3580.86998317712
-                }, 
-                {
-                 "height":0,
                  "id":63,
                  "name":"",
                  "point":true,
@@ -2140,6 +2122,24 @@
                  "width":0,
                  "x":7406.35033892258,
                  "y":2984.30253300036
+                }, 
+                {
+                 "height":0,
+                 "id":112,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"objectType",
+                         "type":"string",
+                         "value":"sword"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":6292.42081447964,
+                 "y":3523.7556561086
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2351,10 +2351,10 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":111,
+ "nextobjectid":113,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.10.2",
+ "tiledversion":"1.11.0",
  "tileheight":32,
  "tilesets":[
         {

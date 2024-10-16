@@ -7,6 +7,8 @@ export class Player {
     this.player.flipX = false;
     this.isInvincible = false; // Variable pour gérer l'invincibilité temporaire après un coup
     this.blinkTimer = null; // Stocker le timer de clignotement
+    this.shootCooldown = 200; // Délai entre les tirs en millisecondes
+    this.lastShootTime = 0; // Dernier tir du joueur
 
     this.scene.physics.add.collider(this.player, calque_plateformes);
     this.scene.physics.add.collider(this.player, platforms);
@@ -29,6 +31,7 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
+    this.canShoot = false;
     this.canAttack = false;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -179,9 +182,16 @@ blinkRed() {
         start: 0,
         end: 5,
       }),
-      frameRate: 10,
+      frameRate: 30,
       repeat: 0,
     });
+
+    this.scene.anims.create({
+      key: 'player_bullet_animation',
+      frames: this.scene.anims.generateFrameNumbers('player_bullet', { start: 0, end: 3 }), // Ajuste le start et end selon tes frames
+      frameRate: 10,
+      repeat: -1 // Boucle indéfiniment
+  });
   }
 
   update() {
@@ -203,43 +213,120 @@ blinkRed() {
     this.canAttack = true;
   }
 
+  collectDreamSword() {
+    this.scene.sound.play('objectSound');
+    this.canShoot = true;
+  }
+
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack)) {
-      // Lancer l'animation d'attaque
-      this.player.anims.play("anim_attaque", true);
-      this.scene.sound.play('attackSound'); // Jouer le son d'attaque
-  
-    // Créer une hitbox temporaire pour l'attaque
-    let hitbox = this.scene.add.rectangle(
-      this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
-      this.player.y,
-      50, // Largeur de la hitbox
-      50, // Hauteur de la hitbox
-      0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
-      0 // Opacité de 0 (invisible)
-    );
-    
-    // Activer la physique sur la hitbox
-    this.scene.physics.add.existing(hitbox);
-    hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
-
-    // Détection des collisions avec les ennemis
-    this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {
-      if (enemySprite.instance) {
-        enemySprite.instance.takeDamage(); // Appelle la méthode de l'instance complète
+    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack) {
+      this.player.body.setSize(60, 60);
+      if (this.canShoot && this.scene.time.now > this.lastShootTime + this.shootCooldown) {
+        this.shoot(); // Appelle la méthode de tir
+        this.lastShootTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
       } else {
-        console.warn("L'ennemi n'a pas d'instance associée :", enemySprite);
-      }
-    });
+        this.player.anims.play("anim_attaque", true);
+        this.scene.sound.play('attackSound'); // Jouer le son d'attaque
+        
+      // Créer une hitbox temporaire pour l'attaque
+      let hitbox = this.scene.add.rectangle(
+        this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
+        this.player.y,
+        50, // Largeur de la hitbox
+        50, // Hauteur de la hitbox
+        0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
+        0 // Opacité de 0 (invisible)
+      );
 
-    // Détruire la hitbox après un court délai pour simuler un coup rapide
-    this.scene.time.delayedCall(200, () => {
-      hitbox.destroy(); // Supprimer la hitbox après l'attaque
-    });
+      // Activer la physique sur la hitbox
+      this.scene.physics.add.existing(hitbox);
+      hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
+
+      // Détection des collisions avec les ennemis
+      this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {
+        if (enemySprite.instance) {
+          enemySprite.instance.takeDamage(); // Appelle la méthode de l'instance complète
+        } else {
+          console.warn("L'ennemi n'a pas d'instance associée :", enemySprite);
+        }
+      });
+
+      // Détruire la hitbox après un court délai pour simuler un coup rapide
+      this.scene.time.delayedCall(200, () => {
+        hitbox.destroy(); // Supprimer la hitbox après l'attaque
+      });
+      }
     }
   }
 
-// Ajoutez cette variable dans le constructeur
+  shoot() {
+    if (!this.canShoot) return; // Vérifier si le joueur peut tirer (après avoir collecté l'épée)
+    this.scene.sound.play('shootSound'); // Jouer le son d'attaque
+    this.player.anims.play("anim_attaque", true);
+    // Créer une balle à la position actuelle du joueur
+    const bullet = this.scene.physics.add.sprite(this.player.x, this.player.y, 'player_bullet');
+  
+  bullet.anims.play('player_bullet_animation');
+
+  // Vérifier la direction du joueur et ajuster la vitesse de la balle
+  const direction = this.player.flipX ? -1 : 1; // Si le joueur est orienté à gauche, la balle va à gauche
+
+  bullet.startX = this.player.x;
+  const maxDistance = 500; // Distance maximale que la balle peut parcourir (ajuster selon besoin)
+
+  bullet.setVelocityX(600 * direction); // Vitesse de la balle (600 peut être ajusté)
+  
+  // Assurer que la balle ne soit pas affectée par la gravité
+  bullet.body.setAllowGravity(false);
+
+  // Détruire la balle lorsqu'elle sort des limites du monde
+  bullet.setCollideWorldBounds(true);
+  bullet.body.onWorldBounds = true;
+  bullet.body.world.on('worldbounds', () => {
+    bullet.destroy(); // Supprimer la balle lorsqu'elle sort du cadre
+  });
+
+  // Ajouter une fonction de mise à jour pour vérifier la distance parcourue
+  bullet.update = () => {
+    const distanceTravelled = Math.abs(bullet.x - bullet.startX);
+    if (distanceTravelled > maxDistance) {
+      bullet.destroy(); // Détruire la balle si elle dépasse la distance maximale
+    }
+  };
+
+  this.scene.physics.world.on('worldstep', () => {
+    if (bullet.active) {
+      bullet.update();
+    }
+  });
+
+
+  // Gérer la collision entre la balle et les ennemis, mais sans les repousser
+  this.scene.physics.add.overlap(bullet, this.scene.enemies, (bullet, enemySprite) => {
+    if (enemySprite.instance) {
+      enemySprite.instance.takeDamage(); // L'ennemi subit des dégâts
+      bullet.destroy(); // Détruire la balle après l'impact
+      this.gainLife();
+    }
+  });
+
+  // Détecter la collision entre la balle et le calque des plateformes
+  this.scene.physics.add.collider(bullet, this.scene.calque_plateformes, () => {
+    bullet.destroy(); // Détruire la balle lorsqu'elle touche une plateforme
+  });  
+
+  // Désactiver toute interaction physique (poussée) entre la balle et l'ennemi
+  bullet.body.setImmovable(true); // La balle ne bouge pas lorsqu'elle touche un ennemi
+}
+
+gainLife() {
+  // Limiter le nombre de points de vie à un maximum de 5 (ou autre limite)
+  if (this.lifePoints < 5) {
+    this.lifePoints++;
+    this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+  }
+}
+
 
 AnimMouvement() {
   if (

@@ -160,7 +160,18 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32,
     });
+
+    this.load.spritesheet('upgraded_sword', 'src/assets/objects/upgraded_sword.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+    
+    this.load.spritesheet('player_bullet', 'src/assets/player/bullet.png', {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
   }
+
 
   create() {
     this.scene.start("SceneMenu");
