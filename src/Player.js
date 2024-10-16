@@ -75,10 +75,10 @@ die() {
         this.player.setVisible(false); // Rendre le joueur invisible
         this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
         this.player = null; // Assurez-vous que this.player est null
-        this.scene.enemyText.destroy();
         this.scene.scene.get("MapScene").mapMusic.stop();
         this.scene.scene.stop("MapScene");
         this.scene.scene.start("GameOver"); // Rediriger vers le menu
+        // Optionnel : désactiver les événements qui tenteraient d'utiliser this.player
     }
 }
 
@@ -326,7 +326,7 @@ blinkRed() {
 
 gainLife() {
   // Limiter le nombre de points de vie à un maximum de 5 (ou autre limite)
-  if (this.lifePoints < 6) {
+  if (this.lifePoints < 5) {
     this.lifePoints++;
     this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
   }
@@ -501,7 +501,7 @@ collectBoots() {
   collectDiamondHeart() {
     this.hasDiamondHeart = true;
     this.scene.sound.play('objectSound');
-    if (this.lifePoints < 6) {
+    if (this.lifePoints < 5) {
       this.lifePoints++;
       this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
     }

@@ -10,6 +10,8 @@ import { Controle } from "./controle.js";
 import { GameOver } from "./GameOver.js";
 import { MapScene } from "./MapScene.js";
 import { PreloadScene } from "./Preload.js";
+import { GoodEnd } from "./GoodEnd.js";
+import { BadEnd } from "./BadEnd.js";
 import { Credits } from "./credits.js";
 
 // configuration générale du jeu
@@ -28,7 +30,7 @@ var config = {
       debug: true, // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     },
   },
-  scene: [PreloadScene, SceneMenu, Scenario, Controle, Credits, MapScene, GameOver],
+  scene: [PreloadScene, SceneMenu, Scenario, Controle, Credits, MapScene, GameOver, GoodEnd, BadEnd],
 
   scale: {
     mode: Phaser.Scale.FIT,

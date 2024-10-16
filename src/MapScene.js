@@ -157,15 +157,20 @@ export class MapScene extends Phaser.Scene {
 
         // Ajouter un événement quand un ennemi est vaincu
         enemy.enemy.on('destroy', () => {
+          console.log("Enemy destroyed:", enemy);
           this.defeatedEnemies++; // Incrémenter le nombre d'ennemis vaincus
-          if (this.player){
-            if (this.player.lifePoints < 6) {
+          if (this.player && this.enemyText) {
+            if (this.player.lifePoints < 5) {
               this.player.lifePoints++;
-              this.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+              this.updateLifeDisplay();
             }
             this.updateEnemyText(); // Mettre à jour le texte d'ennemis
+          } else {
+            console.warn("Le joueur ou enemyText est manquant.");
           }
         });
+        
+        
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
         console.log("Enemy created and added to group:", enemy);
@@ -284,27 +289,22 @@ export class MapScene extends Phaser.Scene {
 
   checkVictoryCondition() {
     if (this.player.hasDiamondHeart) {
-      // Si le joueur a le cœur de diamant, passer à une fin spéciale
-      this.scene.start("SpecialEnding");
+      this.mapMusic.stop(); // Lecture en boucle
+      this.scene.start("GoodEnd");
     } else {
-      // Sinon, passer à une fin normale
-      this.scene.start("NormalEnding");
+      this.mapMusic.stop(); // Lecture en boucle
+      this.scene.start("BadEnd");
     }
   }
 
   updateEnemyText() {
-    console.log("Vérification du joueur :", this.player);
-    console.log("Vérification du texte des ennemis :", this.enemyText);
-    if (this.player) { // Vérifie si le joueur existe
-        if (this.enemyText) {
-            this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
-        } else {
-            console.warn("Le texte des ennemis battus n'existe pas encore ou a été détruit.");
-        }
+    // Vérifie si l'ennemiText et le joueur existent avant de mettre à jour le texte
+    if (this.enemyText && this.player) {
+      this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
     } else {
-        console.warn("Le joueur a été détruit, le texte des ennemis ne sera pas mis à jour.");
+      console.warn("Impossible de mettre à jour le texte des ennemis battus. L'élément texte ou le joueur est manquant.");
     }
-}
+  }
 
 
   updateLifeDisplay() {
@@ -312,7 +312,7 @@ export class MapScene extends Phaser.Scene {
     const lifePoints = this.player.lifePoints;
 
     // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints >= 5) {
+    if (lifePoints = 5) {
       this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
       this.lifeBar.setTexture("1hit");
