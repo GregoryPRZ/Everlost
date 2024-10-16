@@ -13,7 +13,6 @@ export class Player {
 
     this.clavier = this.scene.input.keyboard.createCursorKeys();
     this.nbSaut = 0;
-    this.doubleSaut = true;
 
     this.space = this.scene.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
@@ -26,12 +25,16 @@ export class Player {
       Phaser.Input.Keyboard.KeyCodes.X // Change 'Z' to 'X' for dash
     );
 
+    this.hasDoubleJump = false;   
+    this.canUseDash = false; // Le dash n'est pas disponible au début
+
     // Variables pour le dash
+    this.canAttack = false;
+    this.hasDiamondHeart = false;
     this.isDashing = false;
     this.dashSpeed = 500;
     this.dashTime = 150; // Durée du dash en ms
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
-    this.canDash = true; // Contrôle du dash
     this.isMoving = false; // Variable pour suivre si le joueur est en mouvement
 
     this.lifePoints = 5; // Par exemple 5 vies
@@ -194,7 +197,11 @@ blinkRed() {
     this.AnimDash();
     this.AnimAttaque(); // Gérer l'attaque ici
   }
-  
+
+  collectSword() {
+    this.scene.sound.play('objectSound');
+    this.canAttack = true;
+  }
 
   AnimAttaque() {
     if (Phaser.Input.Keyboard.JustDown(this.attack)) {
@@ -202,12 +209,33 @@ blinkRed() {
       this.player.anims.play("anim_attaque", true);
       this.scene.sound.play('attackSound'); // Jouer le son d'attaque
   
-      // Vérifier dans quelle direction le joueur est orienté (gauche ou droite)
-      if (this.player.flipX) {
-        this.player.setVelocityX(-200);
+    // Créer une hitbox temporaire pour l'attaque
+    let hitbox = this.scene.add.rectangle(
+      this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
+      this.player.y,
+      50, // Largeur de la hitbox
+      50, // Hauteur de la hitbox
+      0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
+      0 // Opacité de 0 (invisible)
+    );
+    
+    // Activer la physique sur la hitbox
+    this.scene.physics.add.existing(hitbox);
+    hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
+
+    // Détection des collisions avec les ennemis
+    this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {
+      if (enemySprite.instance) {
+        enemySprite.instance.takeDamage(); // Appelle la méthode de l'instance complète
       } else {
-        this.player.setVelocityX(200);
+        console.warn("L'ennemi n'a pas d'instance associée :", enemySprite);
       }
+    });
+
+    // Détruire la hitbox après un court délai pour simuler un coup rapide
+    this.scene.time.delayedCall(200, () => {
+      hitbox.destroy(); // Supprimer la hitbox après l'attaque
+    });
     }
   }
 
@@ -294,16 +322,16 @@ playFootstepSound() {
   }
 }
 
-
+collectBoots() {
+  this.scene.sound.play('objectSound');
+  this.hasDoubleJump = true; // Active le double saut
+}
 
 
   Saut() {
     // Vérifie si le joueur est au sol pour réinitialiser les sauts
     if (this.player.body.blocked.down) {
       this.nbSaut = 0; // Réinitialiser le compteur de saut
-      this.doubleSaut = true; // Réactiver le double saut
-      this.nbSaut = 0;
-      this.doubleSaut = true;
     }
 
     // Gérer le saut avec un seul appui détecté
@@ -314,7 +342,7 @@ playFootstepSound() {
         this.nbSaut++;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play('jumpSound'); // Jouer le son de saut
-      } else if (this.nbSaut === 1 && this.doubleSaut) {
+      } else if (this.nbSaut === 1 && this.hasDoubleJump) {
         // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
@@ -327,6 +355,11 @@ playFootstepSound() {
     }
   }
 
+  collectDash() {
+    this.scene.sound.play('objectSound');
+    this.canUseDash = true; // Active le dash
+  }
+
   AnimDash() {
     if (this.isDashing) {
       this.player.setVelocityX(this.dashSpeed * (this.player.flipX ? -1 : 1)); // Vitesse de dash
@@ -335,12 +368,12 @@ playFootstepSound() {
         this.isDashing = false;
         this.player.setVelocityX(0); // Arrêter le dash
       });
-    } else if (this.keyX.isDown && this.canDash) {
+    } else if (this.keyX.isDown && this.canUseDash) {
       this.isDashing = true;
       this.scene.sound.play('dashSound'); // Jouer le son de saut
-      this.canDash = false;
+      this.canUseDash = false;
       this.scene.time.delayedCall(this.dashCooldown, () => {
-        this.canDash = true; // Réactiver le dash après le cooldown
+        this.canUseDash = true; // Réactiver le dash après le cooldown
       });
     }
   }
@@ -354,17 +387,25 @@ playFootstepSound() {
       // Si la tuile est une échelle, autoriser le mouvement vertical
       if (this.clavier.up.isDown) {
         this.player.setVelocityY(-150); // Monter
-        this.player.setGravityY(0); // Désactiver la gravité
       } else if (this.clavier.down.isDown) {
         this.player.setVelocityY(150); // Descendre
-        this.player.setGravityY(0); // Désactiver la gravité
       } else {
         this.player.setVelocityY(0); // Arrêter le mouvement vertical
-        this.player.setGravityY(0); // Toujours désactiver la gravité sur l'échelle
       }
     } else {
-      // Sinon, réactiver la gravité
-      this.player.setGravityY(300); // Réactive la gravité lorsque le joueur n'est pas sur l'échelle
     }
+  }
+
+  collectHeart() {
+    this.scene.sound.play('objectSound');
+    this.lifePoints++;
+    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+  }
+
+  collectDiamondHeart() {
+    this.hasDiamondHeart = true;
+    this.scene.sound.play('objectSound');
+    this.lifePoints = 10;
+    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
   }
 }

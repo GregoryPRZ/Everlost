@@ -13,6 +13,8 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("credits", "src/assets/buttons/credits.png");
     this.load.image("scenario", "src/assets/screens/scenario.png");
     this.load.image("gameover", "src/assets/screens/gameOver.png");
+    this.load.image("goodend", "src/assets/screens/goodEnd.png");
+    this.load.image("badend", "src/assets/screens/badEnd.png");
     this.load.image("start", "src/assets/buttons/Start.png");
     this.load.image("retour", "src/assets/buttons/retour.png");
 
@@ -132,6 +134,31 @@ export class PreloadScene extends Phaser.Scene {
     this.load.spritesheet("crow_dive", "src/assets/enemy/crow_attack.png", {
       frameWidth: 64,
       frameHeight: 64,
+    });
+
+    this.load.spritesheet('boots', 'src/assets/objects/golden_boots.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('diamond_heart', 'src/assets/objects/diamond_heart.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('heart', 'src/assets/objects/heart.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('dash', 'src/assets/objects/dash_upgrade.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('sword', 'src/assets/objects/everlost_sword.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
     });
   }
 

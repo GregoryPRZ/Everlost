@@ -1,10 +1,11 @@
 export class Blob {
   constructor(scene, x, y, texture, calque_plateformes) {
     this.scene = scene;
-
+    this.lifePoints = 3;
     // Initialisation de l'ennemi
     this.enemy = this.scene.physics.add.sprite(x, y, texture);
     this.enemy.setGravityY(300);
+    this.enemy.instance = this;
 
     // Propriétés du comportement
     this.speed = 100;
@@ -174,6 +175,48 @@ export class Blob {
       }
     );
   }
+
+  takeDamage() {
+    if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
+    this.scene.sound.play('hurtSound');
+    this.lifePoints--; // Réduit la vie du joueur
+    this.isInvincible = true; // Rend le joueur temporairement invincible
+    if (this.lifePoints <= 0) {
+        this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        return; // Sort de la méthode
+    }
+  
+    this.blinkRed();
+  
+    // Remettre le joueur visible et stopper l'invincibilité après un certain temps
+    this.scene.time.delayedCall(500, () => {
+        this.isInvincible = false;
+        if (this.enemy) {
+            this.enemy.clearTint(); // Retirer la teinte rouge
+        }
+    }, [], this);
+  }
+
+  blinkRed() {
+    if (!this.enemy) return; // Vérifiez si le joueur existe avant d'appliquer la teinte
+  
+    this.enemy.setTint(0xff0000); // Applique une teinte rouge
+  
+    // Utiliser un tween pour gérer le clignotement
+    this.scene.tweens.add({
+        targets: this.enemy,
+        alpha: 1, // Réduire l'opacité à 0.5 au lieu de 0
+        ease: 'Cubic.easeOut',
+        duration: 100, // Durée d'une phase de clignotement
+        repeat: 5, // Répéter 5 fois
+        yoyo: true, // Alterner entre visible et invisible
+        onComplete: () => {
+            if (this.enemy) {
+                this.enemy.clearTint(); // Retirer la teinte rouge une fois terminé
+            }
+        }
+    });
+  }
 }
 
 export class CarnivorousPlant {
@@ -181,6 +224,7 @@ export class CarnivorousPlant {
     this.scene = scene;
     this.player = player;
     this.isAttacking = false;
+    this.lifePoints = 4;
 
     // Ajouter le sprite de la plante
     this.enemy = this.scene.physics.add.sprite(x, y, "carnivorous_plant_idle");
@@ -270,6 +314,48 @@ export class CarnivorousPlant {
   update() {
     // Aucune vérification manuelle ici, car l'overlap est géré par Phaser
   }
+
+  takeDamage() {
+    if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
+    this.scene.sound.play('hurtSound');
+    this.lifePoints--; // Réduit la vie du joueur
+    this.isInvincible = true; // Rend le joueur temporairement invincible
+    if (this.lifePoints <= 0) {
+        this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        return; // Sort de la méthode
+    }
+  
+    this.blinkRed();
+  
+    // Remettre le joueur visible et stopper l'invincibilité après un certain temps
+    this.scene.time.delayedCall(500, () => {
+        this.isInvincible = false;
+        if (this.enemy) {
+            this.enemy.clearTint(); // Retirer la teinte rouge
+        }
+    }, [], this);
+  }
+
+  blinkRed() {
+    if (!this.enemy) return; // Vérifiez si le joueur existe avant d'appliquer la teinte
+  
+    this.enemy.setTint(0xff0000); // Applique une teinte rouge
+  
+    // Utiliser un tween pour gérer le clignotement
+    this.scene.tweens.add({
+        targets: this.enemy,
+        alpha: 1, // Réduire l'opacité à 0.5 au lieu de 0
+        ease: 'Cubic.easeOut',
+        duration: 100, // Durée d'une phase de clignotement
+        repeat: 5, // Répéter 5 fois
+        yoyo: true, // Alterner entre visible et invisible
+        onComplete: () => {
+            if (this.enemy) {
+                this.enemy.clearTint(); // Retirer la teinte rouge une fois terminé
+            }
+        }
+    });
+  }
 }
 
 export class Vine {
@@ -277,6 +363,8 @@ export class Vine {
     this.scene = scene;
     this.enemy = this.scene.physics.add.sprite(x, y, texture);
     this.enemy.body.setAllowGravity(false);
+    this.lifePoints = 1;
+    this.enemy.instance = this;
 
     this.setupAnimations();
   }
@@ -296,12 +384,26 @@ export class Vine {
   }
 
   update() {}
+
+  takeDamage() {
+    if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
+    this.scene.sound.play('hurtSound');
+    this.lifePoints--; // Réduit la vie du joueur
+    this.isInvincible = true; // Rend le joueur temporairement invincible
+    if (this.lifePoints <= 0) {
+        this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        return; // Sort de la méthode
+    }
+  }
 }
 
 export class Crow {
   constructor(scene, x, y, player) {
     this.scene = scene;
     this.player = player;
+    this.lifePoints = 2;
+
+    // Ajouter le sprite du corbeau avec l'animation de vol par défaut
     this.enemy = this.scene.physics.add.sprite(x, y, "crow_fly");
     this.enemy.setImmovable(false);
     this.enemy.body.setSize(32, 32);
@@ -446,5 +548,47 @@ export class Crow {
 
     this.distanceTraveled = 0; // Réinitialiser la distance parcourue
     console.log("Distance traveled reset to 0");
+  }
+
+  takeDamage() {
+    if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
+    this.scene.sound.play('hurtSound');
+    this.lifePoints--; // Réduit la vie du joueur
+    this.isInvincible = true; // Rend le joueur temporairement invincible
+    if (this.lifePoints <= 0) {
+        this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        return; // Sort de la méthode
+    }
+  
+    this.blinkRed();
+  
+    // Remettre le joueur visible et stopper l'invincibilité après un certain temps
+    this.scene.time.delayedCall(500, () => {
+        this.isInvincible = false;
+        if (this.enemy) {
+            this.enemy.clearTint(); // Retirer la teinte rouge
+        }
+    }, [], this);
+  }
+
+  blinkRed() {
+    if (!this.enemy) return; // Vérifiez si le joueur existe avant d'appliquer la teinte
+  
+    this.enemy.setTint(0xff0000); // Applique une teinte rouge
+  
+    // Utiliser un tween pour gérer le clignotement
+    this.scene.tweens.add({
+        targets: this.enemy,
+        alpha: 1, // Réduire l'opacité à 0.5 au lieu de 0
+        ease: 'Cubic.easeOut',
+        duration: 100, // Durée d'une phase de clignotement
+        repeat: 5, // Répéter 5 fois
+        yoyo: true, // Alterner entre visible et invisible
+        onComplete: () => {
+            if (this.enemy) {
+                this.enemy.clearTint(); // Retirer la teinte rouge une fois terminé
+            }
+        }
+    });
   }
 }
