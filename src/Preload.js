@@ -104,13 +104,38 @@ export class PreloadScene extends Phaser.Scene {
     // Charger la spritesheet pour le vol du corbeau
     this.load.spritesheet('crow_fly', 'src/assets/enemy/crow_move.png', {
       frameWidth: 64,
-      frameHeight: 64
+      frameHeight: 64,
     });
 
     // Charger la spritesheet pour l'attaque en piqué du corbeau
     this.load.spritesheet('crow_dive', 'src/assets/enemy/crow_attack.png', {
       frameWidth: 64,
-      frameHeight: 64
+      frameHeight: 64,
+    });
+
+    this.load.spritesheet('boots', 'src/assets/objects/golden_boots.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('diamond_heart', 'src/assets/objects/diamond_heart.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('heart', 'src/assets/objects/heart.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('dash', 'src/assets/objects/dash_upgrade.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
+    }); 
+
+    this.load.spritesheet('sword', 'src/assets/objects/everlost_sword.png', {       
+      frameWidth: 32,
+      frameHeight: 32,
     });
 
 

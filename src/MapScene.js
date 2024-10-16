@@ -1,5 +1,6 @@
 import { Blob, CarnivorousPlant, Vine, Crow } from "./enemy.js";
-import { Player } from "./Player.js";
+import { Boots, Dash, Heart, DiamondHeart, Sword} from "./objects.js";
+import { Player } from "./Player.js"; 
 
 export class MapScene extends Phaser.Scene {
   constructor() {
@@ -13,6 +14,7 @@ export class MapScene extends Phaser.Scene {
     this.player = null; // Ajouter le joueur ici
     this.enemies = null; // Pour stocker les ennemis
     this.enemyObjects = [];
+    this.objects = []; // Nouveau tableau pour stocker les objets
   }
 
   preload() {
@@ -26,6 +28,7 @@ export class MapScene extends Phaser.Scene {
     this.load.audio("mapMusic", "src/assets/sounds/bgm_map.mp3"); // Remplacez par le chemin de votre son
     this.load.audio("stepSound", "src/assets/sounds/se_step.mp3");
     this.load.audio("hurtSound", "src/assets/sounds/se_hurt.mp3");
+    this.load.audio("objectSound", "src/assets/sounds/se_objet.mp3");
   }
 
   create() {
@@ -138,7 +141,55 @@ export class MapScene extends Phaser.Scene {
       } else {
         console.error("Enemy creation failed for:", enemyType);
       }
-    });
+  });
+
+  const objectLayer = this.carteDuNiveau.getObjectLayer('calque_objets').objects;
+
+  objectLayer.forEach((objectData) => {
+    const objectType = objectData.properties.find(prop => prop.name === 'objectType').value;
+    console.log('Creating object of type:', objectType);
+  
+    let object;
+    switch (objectType) {
+      case 'boots':
+        object = new Boots(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
+      case 'dash':
+        object = new Dash(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
+      case 'heart':
+        object = new Heart(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
+      case 'diamond_heart':
+        object = new DiamondHeart(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
+      case 'sword':
+        object = new Sword(this, objectData.x, objectData.y, this.calque_plateformes, this.player);
+        break;
+    }
+  
+    if (object) {
+      this.objects.push(object); // Ajoute à la liste des objets
+      this.physics.add.overlap(this.player.player, object, () => {
+        if (objectType === "boots") {
+          this.player.collectBoots();
+        } else if (objectType === "dash") {
+          this.player.collectDash();
+        } else if (objectType === "heart") {
+          this.player.collectHeart();
+        } else if (objectType === "diamond_heart") {
+          this.player.collectDiamondHeart();
+        } else if (objectType === "sword") {
+          this.player.collectSword();
+        }
+        object.destroy(); // Supprime l'objet ramassé
+      });
+    }
+  });
+  
+
+    // Suivre le joueur avec la caméra
+    this.cameras.main.startFollow(this.player.player);
 
     // Collisions
     this.physics.add.collider(this.enemies, this.calque_plateformes);
@@ -163,6 +214,20 @@ export class MapScene extends Phaser.Scene {
     // Mettre à jour le joueur
     if (this.player) {
       this.player.update();
+      //console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
+    }
+    if (this.enemyObjects) {
+      this.enemyObjects.forEach((enemy) => {
+          if (enemy.update) {
+              enemy.update(); // Appeler la méthode update de l'instance d'ennemi
+          }
+      });
+    }  
+  
+    this.objects.forEach(object => object.update());
+    // Exemple de condition de perte de vie
+    if (this.playerIsHit) {
+      this.player.decreaseLife(); // Enlève une vie
     }
 
     // Mettre à jour tous les ennemis dans this.enemies
