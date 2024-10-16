@@ -164,8 +164,14 @@ export class MapScene extends Phaser.Scene {
   const objectLayer = this.carteDuNiveau.getObjectLayer('calque_objets').objects;
 
   objectLayer.forEach((objectData) => {
+    console.log(objectData);
     const objectType = objectData.properties.find(prop => prop.name === 'objectType').value;
     console.log('Creating object of type:', objectType);
+  
+    if (!objectType.value) {
+      console.warn(`Object at (${objectData.x}, ${objectData.y}) has no properties and will be ignored.`);
+      return;
+    }
   
     let object;
     switch (objectType) {

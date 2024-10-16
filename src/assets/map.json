@@ -1300,7 +1300,7 @@
                  "visible":true,
                  "width":0,
                  "x":6833.6938236001,
-                 "y":5177.84186493631
+                 "y":5145.31924050192
                 }, 
                 {
                  "height":0,
@@ -1317,8 +1317,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":7018.74549387166,
-                 "y":4497.71689497717
+                 "x":7022.98757531962,
+                 "y":4453.88205334821
                 }, 
                 {
                  "height":0,
@@ -1733,6 +1733,78 @@
                  "width":0,
                  "x":5139.38956981495,
                  "y":1729.15164623888
+                }, 
+                {
+                 "height":0,
+                 "id":107,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemyType",
+                         "type":"string",
+                         "value":"plant"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":6744.05900027315,
+                 "y":3919.69407265774
+                }, 
+                {
+                 "height":0,
+                 "id":108,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemyType",
+                         "type":"string",
+                         "value":"plant"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":6544.11764705882,
+                 "y":5746.60633484163
+                }, 
+                {
+                 "height":0,
+                 "id":109,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemyType",
+                         "type":"string",
+                         "value":"plant"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":6257.07013574661,
+                 "y":4502.26244343891
+                }, 
+                {
+                 "height":0,
+                 "id":110,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemyType",
+                         "type":"string",
+                         "value":"plant"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":5715.49773755656,
+                 "y":3803.73303167421
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1796,8 +1868,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1814.50649759876,
-                 "y":1573.49327919743
+                 "x":1811.67844330012,
+                 "y":1557.9389805549
                 }, 
                 {
                  "height":0,
@@ -1851,7 +1923,7 @@
                  "visible":true,
                  "width":0,
                  "x":6226.16169755573,
-                 "y":709.105560032232
+                 "y":692.137234240377
                 }, 
                 {
                  "height":0,
@@ -2068,78 +2140,6 @@
                  "width":0,
                  "x":7406.35033892258,
                  "y":2984.30253300036
-                }, 
-                {
-                 "height":0,
-                 "id":74,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemyType",
-                         "type":"string",
-                         "value":"plant"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":6544.09997596732,
-                 "y":5757.02956020187
-                }, 
-                {
-                 "height":0,
-                 "id":75,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemyType",
-                         "type":"string",
-                         "value":"plant"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":6255.70776255708,
-                 "y":4542.17736121125
-                }, 
-                {
-                 "height":0,
-                 "id":76,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemyType",
-                         "type":"string",
-                         "value":"plant"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":6736.36145157414,
-                 "y":3910.11776015381
-                }, 
-                {
-                 "height":0,
-                 "id":77,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemyType",
-                         "type":"string",
-                         "value":"plant"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":5714.97236241288,
-                 "y":3880.07690459024
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2351,7 +2351,7 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":107,
+ "nextobjectid":111,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",
