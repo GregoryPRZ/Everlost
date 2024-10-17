@@ -31,8 +31,8 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = true;
-    this.canAttack = true;
+    this.canShoot = false;
+    this.canAttack = false;
     this.hasDiamondHeart = false;
     this.isDashing = false;
     this.dashSpeed = 500;
@@ -78,7 +78,6 @@ die() {
         this.scene.scene.get("MapScene").mapMusic.stop();
         this.scene.scene.stop("MapScene");
         this.scene.scene.start("GameOver"); // Rediriger vers le menu
-        // Optionnel : désactiver les événements qui tenteraient d'utiliser this.player
     }
 }
 
@@ -235,10 +234,10 @@ blinkRed() {
         
       // Créer une hitbox temporaire pour l'attaque
       let hitbox = this.scene.add.rectangle(
-        this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
+        this.player.x + (this.player.flipX ? -50 : 50), // Position ajustée selon la direction du joueur
         this.player.y,
-        50, // Largeur de la hitbox
-        50, // Hauteur de la hitbox
+        100, // Largeur de la hitbox
+        40, // Hauteur de la hitbox
         0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
         0 // Opacité de 0 (invisible)
       );
@@ -246,6 +245,11 @@ blinkRed() {
       // Activer la physique sur la hitbox
       this.scene.physics.add.existing(hitbox);
       hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
+
+        // Ajouter l'overlap entre la hitbox et les balles des ennemis
+        this.scene.physics.add.overlap(hitbox, this.scene.enemyBullets, (hitbox, bullet) => {
+          bullet.destroy(); // Détruire la balle si elle touche la hitbox d'attaque
+      });
 
       // Détection des collisions avec les ennemis
       this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {

@@ -149,6 +149,7 @@ export class Blob {
       this.enemy.y,
       "bullet"
     );
+    this.scene.enemyBullets.add(bullet); // Ajouter la balle au groupe enemyBullets
 
     // Calculer le vecteur directionnel vers le joueur
     const playerX = this.scene.player.player.x;
@@ -287,13 +288,12 @@ export class CarnivorousPlant {
           end: 7,
         }
       ),
-      frameRate: 10,
+      frameRate: 30,
       repeat: 0, // L'animation ne se joue qu'une seule fois
     });
 
     // Lancer l'animation "idle" par défaut
     this.enemy.play("idle");
-    console.log("Animation 'idle' lancée.");
   }
 
   update() {
@@ -321,7 +321,8 @@ export class CarnivorousPlant {
     this.scene.sound.play('poisonSound'); // Jouer le son d'attaque
     this.enemy.play("attack", true);
     // Créer une balle à la position actuelle du joueur
-    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y, 'bullet');
+    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y - 10, 'bullet');
+    this.scene.enemyBullets.add(bullet); // Ajouter la balle au groupe enemyBullets
 
   // Vérifier la direction du joueur et ajuster la vitesse de la balle
   const direction = this.enemy.flipX ? 1 : -1; // Si le joueur est orienté à gauche, la balle va à gauche

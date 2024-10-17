@@ -14,13 +14,13 @@ export class MapScene extends Phaser.Scene {
     this.player = null; // Ajouter le joueur ici
     this.enemies = null; // Pour stocker les ennemis
     this.enemyObjects = [];
+    this.enemyBullets = null;
     this.objects = []; // Nouveau tableau pour stocker les objets
     this.totalEnemies = 0; // Nombre total d'ennemis
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
     this.enemyText = null; // Texte pour afficher le compteur
     this.bootsImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
-    this.alreadyAlerted = false; // Texte de la popup
   }
 
   preload() {
@@ -148,6 +148,8 @@ export class MapScene extends Phaser.Scene {
           enemy = new Crow(this, enemyData.x, enemyData.y, this.player);
           break;
       }
+
+      this.enemyBullets = this.physics.add.group(); // Créer un groupe pour les balles des ennemis
 
       if (enemy) {
         // Ajouter l'ennemi complet au groupe this.enemies en tant qu'objet
@@ -307,7 +309,7 @@ export class MapScene extends Phaser.Scene {
       // Définir une distance d'alerte
       const alertDistance = 300; // Ajuste cette valeur selon tes besoins
   
-      if (distance < alertDistance && !enemy.alerted && !this.alreadyAlerted) {
+      if (distance < alertDistance && !enemy.alerted && !this.player.canAttack) {
           // Créer un rectangle pour le fond
           const background = this.add.rectangle(enemy.x, enemy.y - 85, 320, 70, 0xff0000, 0.7).setOrigin(0.5, 0.5);
           background.setStrokeStyle(2, 0xffffff); // Bordure blanche pour le rectangle
@@ -329,7 +331,6 @@ export class MapScene extends Phaser.Scene {
   
           // Marquer l'ennemi comme déjà alerté
           enemy.alerted = true; // Indique que l'alerte a été affichée
-          this.alreadyAlerted = true;
       } else if (distance >= alertDistance) {
           // Réinitialiser l'état d'alerte si le joueur s'éloigne
           enemy.alerted = false; // Permet de réafficher le texte si le joueur se rapproche à nouveau
