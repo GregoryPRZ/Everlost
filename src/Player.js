@@ -27,11 +27,11 @@ export class Player {
       Phaser.Input.Keyboard.KeyCodes.X // Change 'Z' to 'X' for dash
     );
 
-    this.hasDoubleJump = false;
-    this.canUseDash = false; // Le dash n'est pas disponible au début
+    this.hasTripleJump = false;
+    this.canUseDash = true; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = true;
+    this.canShoot = false;
     this.canAttack = true;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
@@ -40,6 +40,14 @@ export class Player {
     this.dashTime = 150; // Durée du dash en ms
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
     this.isMoving = false; // Variable pour suivre si le joueur est en mouvement
+
+    // Créer la barre de progression
+    this.cooldownBar = this.scene.add.graphics();
+    this.cooldownBar.setDepth(10); // S'assurer que la barre soit visible au-dessus des autres éléments
+
+    this.barWidth = 50; // Largeur de la barre
+    this.barHeight = 5; // Hauteur de la barre
+    this.cooldownPercentage = 0; // Initialement, la barre est vide
 
     this.lifePoints = 5; // Par exemple 5 vies
 
@@ -79,7 +87,7 @@ export class Player {
     if (this.player) {
       this.player.body.setEnable(false); // Désactiver la physique
       this.player.setVisible(false); // Rendre le joueur invisible
-      this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
+      this.player.body.destroy(); // Détruit le joueur quand il n'a plus de vie
       this.player = null; // Assurez-vous que this.player est null
       this.scene.scene.get("MapScene").mapMusic.stop();
       this.scene.scene.stop("MapScene");
@@ -242,6 +250,7 @@ export class Player {
       this.canAttackAgain
     ) {
       this.canAttackAgain = false;
+      this.cooldownBar.visible = true; // Rendre la barre visible quand l'attaque est déclenchée
       this.player.body.setSize(46, 60); // Taille de la hitbox d'attaque
       this.player.body.setOffset(16, 0); // Ajuster l'offset si nécessaire
       if (
@@ -317,8 +326,30 @@ export class Player {
 
         // Détruire la hitbox après un court délai pour simuler un coup rapide
         this.scene.time.delayedCall(250, () => {
-          this.canAttackAgain = true;
           hitbox.destroy(); // Supprimer la hitbox après l'attaque
+        });
+
+        // Activer le cooldown de l'attaque avec une barre de progression
+        let cooldownDuration = 250; // Durée totale du cooldown
+        let elapsed = 0;
+
+
+        // Gestion du cooldown via un événement répété
+        const cooldownEvent = this.scene.time.addEvent({
+          delay: 50,
+          repeat: cooldownDuration / 50 - 1, // Répéter le nombre de fois requis pour la durée complète
+          callback: () => {
+            elapsed += 50;
+            let percentage = elapsed / cooldownDuration;
+            this.updateCooldownBar(percentage);
+          
+            if (percentage >= 1) {
+              this.canAttackAgain = true;
+              this.updateCooldownBar(0); // Réinitialiser la barre de progression
+              this.cooldownBar.visible = false; // Cacher la barre après le cooldown
+              cooldownEvent.remove(); // Stopper l'événement pour éviter des appels répétés
+            }
+          },
         });
       }
     }
@@ -399,7 +430,7 @@ export class Player {
 
     // Désactiver le tir pendant 3 secondes
     this.canShoot = false; // Désactiver le tir
-    this.scene.time.delayedCall(3000, () => {
+    this.scene.time.delayedCall(1500, () => {
       this.canShoot = true; // Réactiver le tir après 3 secondes
     });
   }
@@ -515,10 +546,10 @@ export class Player {
 
   collectBoots() {
     this.scene.sound.play("objectSound");
-    this.hasDoubleJump = true; // Active le double saut
+    this.hasTripleJump = true; // Active le double saut
     this.scene.updateBootsUI(); // Met à jour l'affichage des bottes
     this.scene.showNotification(
-      "Vous avez trouvé les bottes dorées ! Appuyez deux fois sur ESPACE pour effectuer un double saut."
+      "Vous avez trouvé les bottes dorées ! Appuyez trois fois sur ESPACE pour effectuer un triple saut."
     );
   }
 
@@ -536,13 +567,19 @@ export class Player {
         this.nbSaut++;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
-      } else if (this.nbSaut === 1 && this.hasDoubleJump) {
+      } else if (this.nbSaut === 1 && this.hasTripleJump) {
         // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
-        this.doubleSaut = false; // Désactiver le double saut
         this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
-        this.doubleSaut = false;
+        this.player.anims.play("anim_saut", true);
+        this.scene.sound.play("jumpSound"); // Jouer le son de saut
+      } else if (this.nbSaut === 2 && this.hasTripleJump) {
+        // Double saut
+        this.player.setVelocityY(-330);
+        this.nbSaut++;
+        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        this.tripleSaut = false;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
       }
@@ -567,12 +604,32 @@ export class Player {
         this.player.setVelocityX(0); // Arrêter le dash
       });
     } else if (this.keyX.isDown && this.canUseDash) {
-      this.isDashing = true;
-      this.scene.sound.play("dashSound"); // Jouer le son de saut
       this.canUseDash = false;
-      this.scene.time.delayedCall(this.dashCooldown, () => {
-        this.canUseDash = true; // Réactiver le dash après le cooldown
-      });
+      this.isDashing = true;
+      this.cooldownBar.visible = true; // Rendre la barre visible quand l'attaque est déclenchée
+      this.scene.sound.play("dashSound"); // Jouer le son de saut
+
+      // Activer le cooldown du dash avec une barre de progression
+      let cooldownDuration = this.dashCooldown;
+      let elapsed = 0;
+
+    // Gestion du cooldown via un événement répété
+    const cooldownEvent = this.scene.time.addEvent({
+      delay: 50,
+      repeat: cooldownDuration / 50 - 1, // Répéter le nombre de fois requis pour la durée complète
+      callback: () => {
+        elapsed += 50;
+        let percentage = elapsed / cooldownDuration;
+        this.updateCooldownBar(percentage);
+
+        if (percentage >= 1) {
+          this.canUseDash = true;
+          this.updateCooldownBar(0); // Réinitialiser la barre de progression
+          this.cooldownBar.visible = false; // Cacher la barre après le cooldown
+          cooldownEvent.remove(); // Stopper l'événement pour éviter des appels répétés
+        }
+      },
+    });
     }
   }
 
@@ -596,8 +653,10 @@ export class Player {
 
   collectHeart() {
     this.scene.sound.play("objectSound");
-    this.lifePoints++;
-    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints < 5) {
+      this.lifePoints++;
+      this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+    }
   }
 
   collectDiamondHeart() {
@@ -611,5 +670,26 @@ export class Player {
     this.scene.showNotification(
       "Vous avez trouvé le coeur de diamant ! Vous ressentez comme une sensation étrange..."
     );
+  }
+
+  updateCooldownBar(percentage) {
+    this.cooldownBar.clear(); // Efface l'ancienne barre
+
+    // Position de la barre par rapport au joueur (au-dessus de sa tête)
+    const barX = this.player.x - this.barWidth / 2;
+    const barY = this.player.y - this.player.height / 2 - 10;
+
+    // Fond de la barre (noir)
+    this.cooldownBar.fillStyle(0x000000, 1);
+    this.cooldownBar.fillRect(barX, barY, this.barWidth, this.barHeight);
+
+    // Remplissage de la barre (rouge)
+    this.cooldownBar.fillStyle(0x00ff00, 1);
+    this.cooldownBar.fillRect(barX, barY, this.barWidth * percentage, this.barHeight);
+
+    // Masquer la barre une fois pleine
+    if (percentage >= 1) {
+      this.cooldownBar.visible = false; // Rendre la barre invisible
+    }
   }
 }

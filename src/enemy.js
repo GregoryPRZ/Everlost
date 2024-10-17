@@ -81,49 +81,38 @@ export class Blob {
     }
   }
 
-  // Déplacement de l'ennemi
-  move() {
-    // Vérifie si l'ennemi atteint la limite gauche ou droite
-    if (this.enemy.x <= this.leftLimit) {
+// Déplacement de l'ennemi
+move() {
+  // Vérifie si l'ennemi atteint la limite gauche ou droite
+  if (this.enemy.x <= this.leftLimit) {
       this.direction = 1; // Change la direction à droite
-    } else if (this.enemy.x >= this.rightLimit) {
+  } else if (this.enemy.x >= this.rightLimit) {
       this.direction = -1; // Change la direction à gauche
-    }
-
-    // Crée des capteurs juste sous le côté gauche et le côté droit de l'ennemi
-    const leftSensorX = this.enemy.x - 10; // Capteur côté gauche
-    const rightSensorX = this.enemy.x + 10; // Capteur côté droit
-    const sensorY = this.enemy.y + this.enemy.height / 2 + 5; // Légèrement sous l'ennemi
-
-    // Vérifie s'il y a une plateforme sous les capteurs
-    const tileLeft = this.scene.calque_plateformes.getTileAtWorldXY(
-      leftSensorX,
-      sensorY
-    );
-    const tileRight = this.scene.calque_plateformes.getTileAtWorldXY(
-      rightSensorX,
-      sensorY
-    );
-
-    // Si l'ennemi est en train de se déplacer vers la gauche et qu'il n'y a pas de plateforme à gauche
-    if (this.direction === -1 && !tileLeft) {
-      this.direction = 1; // Change la direction à droite
-    }
-
-    // Si l'ennemi est en train de se déplacer vers la droite et qu'il n'y a pas de plateforme à droite
-    if (this.direction === 1 && !tileRight) {
-      this.direction = -1; // Change la direction à gauche
-    }
-
-    // Déplacement de l'ennemi
-    this.enemy.setVelocityX(this.speed * this.direction);
-    // Animation et inversion de l'échelle selon la direction
-    if (this.direction === 1) {
-      this.enemy.setFlipX(true); // Remet à l'échelle normale pour aller à droite
-    } else {
-      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
-    }
   }
+
+  // Crée un capteur juste devant le Blob pour détecter un mur
+  const sensorX = this.enemy.x + (this.direction * 20); // 20 pixels devant l'ennemi
+  const sensorY = this.enemy.y; // À la même hauteur que l'ennemi
+
+  // Vérifie s'il y a un mur devant le Blob
+  const tileAtFront = this.scene.calque_plateformes.getTileAtWorldXY(sensorX, sensorY);
+
+  // Si un mur est détecté devant, changer de direction
+  if (tileAtFront) {
+      console.log("Mur détecté, changement de direction !");
+      this.direction *= -1; // Change la direction
+  }
+
+  // Déplacement de l'ennemi
+  this.enemy.setVelocityX(this.speed * this.direction);
+  // Animation et inversion de l'échelle selon la direction
+  if (this.direction === 1) {
+      this.enemy.setFlipX(true); // Remet à l'échelle normale pour aller à droite
+  } else {
+      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
+  }
+}
+
 
   // Vérifie si le joueur est proche et tire
   checkForPlayerAndShoot(time) {
@@ -489,39 +478,39 @@ export class Crow {
 
     // Ajouter le sprite du corbeau avec l'animation de vol par défaut
     this.enemy = this.scene.physics.add.sprite(x, y, "crow_fly");
-    this.enemy.setImmovable(false);
+    this.enemy.setImmovable(true);
     this.enemy.body.setSize(32, 32);
     this.enemy.body.setOffset(12, 20);
-    this.enemy.body.allowGravity = false;
+    this.enemy.body.allowGravity = false; // Pas de gravité
+    console.log("Gravité activée : ", this.enemy.body.allowGravity);
 
-    this.health = 1;
-    this.speed = 100;
+    this.speed = 200; // Vitesse de déplacement horizontal
     this.initialX = x;
-    this.initialY = y;
-    this.direction = -1; // Le corbeau commence en allant vers la gauche
-    this.enemy.setFlipX(true);
-    this.healthBar = this.scene.add.graphics();
+    this.initialY = y; // Position Y initiale
+    this.direction = 1; // Le corbeau commence en allant vers la droite
+    this.enemy.setFlipX(false); // Orientation initiale
 
+    this.healthBar = this.scene.add.graphics();
     this.updateHealthBar();
     this.setupAnimations();
 
-    this.isDiving = false;
-    this.distanceTraveled = 0; // Nouvelle propriété pour suivre la distance parcourue
+    this.leftLimit = x - 250; // Limite gauche
+    this.rightLimit = x + 250; // Limite droite
   }
 
   updateHealthBar() {
     this.healthBar.clear(); // Efface l'ancienne barre
     const width = 50; // Largeur de la barre de vie
     const height = 5; // Hauteur de la barre de vie
-    const healthPercentage = this.lifePoints / 2; // Supposons que 3 est le maximum de points de vie
+    const healthPercentage = this.lifePoints / 2; // Supposons que 2 est le maximum de points de vie
 
     // Dessine le fond de la barre de vie
     this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
-    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height);
 
     // Dessine la barre de vie
     this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
-    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height);
   }
 
   setupAnimations() {
@@ -534,165 +523,90 @@ export class Crow {
       frameRate: 6,
       repeat: -1,
     });
-    this.scene.anims.create({
-      key: "dive",
-      frames: this.scene.anims.generateFrameNumbers("crow_dive", {
-        start: 0,
-        end: 2,
-      }),
-      frameRate: 10,
-      repeat: 0,
-    });
     this.enemy.play("fly");
+  }
+
+
+  move() {
+    // Vérifie si l'ennemi atteint la limite gauche ou droite
+    if (this.enemy.x <= this.leftLimit) {
+        this.direction = 1; // Change la direction à droite
+    } else if (this.enemy.x >= this.rightLimit) {
+        this.direction = -1; // Change la direction à gauche
+    }
+  
+    // Déplacement de l'ennemi
+    this.enemy.setVelocityX(this.speed * this.direction);
+    // Animation et inversion de l'échelle selon la direction
+    if (this.direction === 1) {
+        this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
+    } else {
+        this.enemy.setFlipX(true); // Inverse l'échelle pour tourner l'ennemi vers la gauche
+    }
   }
 
   update() {
-    if (this.isDiving) {
-      return;
+    this.move();
+    this.updateHealthBar(); // Mettre à jour la barre de vie à chaque frame
+
+    // Crée un capteur juste devant le Blob pour détecter un mur
+    const sensorX = this.enemy.x + (this.direction * 20); // 20 pixels devant l'ennemi
+    const sensorY = this.enemy.y; // À la même hauteur que l'ennemi
+
+    // Vérifie s'il y a un mur devant le Blob
+    const tileAtFront = this.scene.calque_plateformes.getTileAtWorldXY(sensorX, sensorY);
+
+    // Si un mur est détecté devant, changer de direction
+    if (tileAtFront) {
+        console.log("Mur détecté, changement de direction !");
+        this.direction *= -1; // Change la direction
     }
 
-    const displacement =
-      (this.speed * this.direction * this.scene.game.loop.delta) / 1000;
-
-    // Mise à jour de la position du corbeau
-    this.enemy.x += displacement;
-
-    this.distanceTraveled += Math.abs(displacement);
-
-    if (this.distanceTraveled >= 150) {
-      this.direction *= -1;
-      this.enemy.setFlipX(this.direction === 1);
-      this.distanceTraveled = 0;
-    } else {
-      this.enemy.setFlipX(this.direction === -1);
-    }
-
-    // Stockez l'ancienne position y pour la hitbox
-    const hitboxY = this.initialY;
-
-    // Réinitialiser la position y de la hitbox à sa position originale
-    this.enemy.body.position.y = hitboxY;
-
-    const distanceToPlayer = Phaser.Math.Distance.Between(
-      this.enemy.x,
-      this.enemy.y,
-      this.player.x,
-      this.player.y
-    );
-
-    if (distanceToPlayer < 200 && this.health > 0 && !this.isDiving) {
-      this.startDiveAttack();
-    }
-  }
-
-  startDiveAttack() {
-    console.log("Start dive attack triggered");
-
-    this.isDiving = true;
-    this.enemy.play("dive");
-    console.log("Diving animation started");
-
-    // Calculer l'angle vers le joueur
-    const angle = Phaser.Math.Angle.Between(
-      this.enemy.x,
-      this.enemy.y,
-      this.player.x,
-      this.player.y
-    );
-    console.log(`Angle towards player: ${angle}`);
-
-    // Ajuster l'orientation du corbeau en fonction de la direction de l'attaque
-    this.enemy.setFlipX(Math.cos(angle) > 0);
-    console.log(`Crow flipX set to: ${Math.cos(angle) > 0}`);
-
-    // Lancer le mouvement de plongée vers le joueur
-    console.log("Crow velocity before dive: ", this.enemy.body.velocity);
-    this.scene.physics.velocityFromRotation(
-      angle,
-      200,
-      this.enemy.body.velocity
-    );
-    console.log(
-      "Crow is diving towards player with velocity:",
-      this.enemy.body.velocity
-    );
-
-    // Lorsque l'attaque est terminée (après un délai ou une collision)
-    this.scene.time.delayedCall(1000, () => {
-      console.log("Dive attack finished, returning to initial position");
-
-      // Retourner à la position initiale
-      this.isDiving = false;
-      this.enemy.play("fly");
-      console.log("Flying animation restarted");
-
-      this.scene.physics.moveTo(this.enemy, this.initialX, this.initialY, 100);
-      console.log(
-        "Crow moving back to initial position:",
-        this.initialX,
-        this.initialY
-      );
-    });
-  }
-
-  endDiveAttack() {
-    console.log("End dive attack triggered");
-
-    this.isDiving = false;
-    this.enemy.play("fly");
-    console.log("Flying animation restarted");
-
-    this.enemy.setVelocity(0);
-    console.log("Crow velocity reset to 0");
-
-    this.initialY = this.enemy.y;
-    console.log("Crow's initialY updated to:", this.initialY);
-
-    this.distanceTraveled = 0; // Réinitialiser la distance parcourue
-    console.log("Distance traveled reset to 0");
+    this.enemy.y = this.initialY;
+    this.enemy.setVelocityY(0); // Empêche tout mouvement vertical
   }
 
   takeDamage() {
     if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
     this.scene.sound.play('hurtSound');
-    this.lifePoints--; // Réduit la vie du joueur
-    this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.lifePoints--; // Réduit la vie du corbeau
+    this.isInvincible = true; // Rend le corbeau temporairement invincible
     this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
-        this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
-        this.healthBar.destroy();
-        return; // Sort de la méthode
+      this.enemy.destroy(); // Supprime le corbeau lorsqu'il meurt
+      this.healthBar.destroy();
+      return;
     }
-  
+
     this.blinkRed();
-  
+
     // Remettre le joueur visible et stopper l'invincibilité après un certain temps
     this.scene.time.delayedCall(500, () => {
-        this.isInvincible = false;
-        if (this.enemy) {
-            this.enemy.clearTint(); // Retirer la teinte rouge
-        }
+      this.isInvincible = false;
+      if (this.enemy) {
+        this.enemy.clearTint(); // Retirer la teinte rouge
+      }
     }, [], this);
   }
 
   blinkRed() {
-    if (!this.enemy) return; // Vérifiez si le joueur existe avant d'appliquer la teinte
-  
+    if (!this.enemy) return; // Vérifiez que le corbeau existe
+
     this.enemy.setTint(0xff0000); // Applique une teinte rouge
-  
-    // Utiliser un tween pour gérer le clignotement
+
+    // Utilise un tween pour gérer le clignotement
     this.scene.tweens.add({
-        targets: this.enemy,
-        alpha: 1, // Réduire l'opacité à 0.5 au lieu de 0
-        ease: 'Cubic.easeOut',
-        duration: 100, // Durée d'une phase de clignotement
-        repeat: 5, // Répéter 5 fois
-        yoyo: true, // Alterner entre visible et invisible
-        onComplete: () => {
-            if (this.enemy) {
-                this.enemy.clearTint(); // Retirer la teinte rouge une fois terminé
-            }
+      targets: this.enemy,
+      alpha: 1,
+      ease: 'Cubic.easeOut',
+      duration: 100,
+      repeat: 5,
+      yoyo: true,
+      onComplete: () => {
+        if (this.enemy) {
+          this.enemy.clearTint(); // Retirer la teinte rouge une fois terminé
         }
+      }
     });
   }
 }

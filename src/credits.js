@@ -20,7 +20,7 @@ export class Credits extends Phaser.Scene {
       const retourButton = this.add
         .image(
           this.cameras.main.centerX + 510,
-          this.cameras.main.centerY + 300,
+          this.cameras.main.centerY + 60,
           "retour"
         )
         .setInteractive()
