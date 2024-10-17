@@ -226,7 +226,7 @@ blinkRed() {
   AnimAttaque() {
     if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack && this.canAttackAgain) {
       this.canAttackAgain = false;
-      this.player.body.setSize(60, 60);
+      this.player.body.setSize(34, 60);
       if (this.canShoot && this.scene.time.now > this.lastShootTime + this.shootCooldown) {
         this.shoot(); // Appelle la méthode de tir
         this.lastShootTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
@@ -370,38 +370,51 @@ AnimMouvement() {
       this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
     }
   } else {
-    // Gestion normale du mouvement si la flèche du bas n'est pas enfoncée
+    // Vérifier s'il y a une plateforme juste au-dessus du joueur
+    const headTile = this.scene.calque_plateformes.getTileAtWorldXY(
+      this.player.x, // Position du joueur
+      this.player.y - this.player.height / 2 // Vérifier juste au-dessus de la tête du joueur
+    );
 
-    if (this.clavier.left.isDown) {
-      this.player.setVelocityX(-160); // Vitesse vers la gauche
-      this.player.flipX = true; // Miroir du sprite vers la gauche
+    // Ne permettre au joueur de se relever que s'il n'y a pas de plateforme solide au-dessus
+    if (!this.clavier.down.isDown && (!headTile || !headTile.properties.estSolide)) {
+      this.player.body.setSize(34, 60); // Taille normale debout
+      this.player.body.setOffset(16, 0);
+    }
 
-      // Si le joueur est en l'air, jouer l'animation de saut
-      if (!this.player.body.blocked.down) {
-        this.player.anims.play("anim_saut", true);
+  // Ne relever le joueur que s'il n'y a pas de tuile solide au-dessus
+  if (!headTile) {
+      if (this.clavier.left.isDown) {
+        this.player.setVelocityX(-160); // Vitesse vers la gauche
+        this.player.flipX = true; // Miroir du sprite vers la gauche
+
+        // Si le joueur est en l'air, jouer l'animation de saut
+        if (!this.player.body.blocked.down) {
+          this.player.anims.play("anim_saut", true);
+        } else {
+          this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
+        }
+        this.playFootstepSound(); // Jouer le son de pas
+      } else if (this.clavier.right.isDown) {
+        this.player.setVelocityX(160); // Vitesse vers la droite
+        this.player.flipX = false; // Normal
+
+        // Si le joueur est en l'air, jouer l'animation de saut
+        if (!this.player.body.blocked.down) {
+          this.player.anims.play("anim_saut", true);
+        } else {
+          this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
+        }
+        this.playFootstepSound(); // Jouer le son de pas
       } else {
-        this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
-      }
-      this.playFootstepSound(); // Jouer le son de pas
-    } else if (this.clavier.right.isDown) {
-      this.player.setVelocityX(160); // Vitesse vers la droite
-      this.player.flipX = false; // Normal
+        this.player.setVelocityX(0); // Arrêter le mouvement
 
-      // Si le joueur est en l'air, jouer l'animation de saut
-      if (!this.player.body.blocked.down) {
-        this.player.anims.play("anim_saut", true);
-      } else {
-        this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
-      }
-      this.playFootstepSound(); // Jouer le son de pas
-    } else {
-      this.player.setVelocityX(0); // Arrêter le mouvement
-
-      // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
-      if (this.player.body.blocked.down) {
-        this.player.anims.play("anim_face", true); // Jouer l'animation face
-      } else {
-        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
+        if (this.player.body.blocked.down) {
+          this.player.anims.play("anim_face", true); // Jouer l'animation face
+        } else {
+          this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        }
       }
     }
   }

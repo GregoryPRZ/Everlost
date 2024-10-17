@@ -89,7 +89,7 @@ export class MapScene extends Phaser.Scene {
       this,
       50,
       5900,
-      "img_perso",
+      "player_debout",
       this.calque_plateformes
     );
 
