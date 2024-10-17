@@ -399,7 +399,7 @@ export class Player {
 
     // Désactiver le tir pendant 3 secondes
     this.canShoot = false; // Désactiver le tir
-    this.scene.time.delayedCall(3000, () => {
+    this.scene.time.delayedCall(1500, () => {
       this.canShoot = true; // Réactiver le tir après 3 secondes
     });
   }
