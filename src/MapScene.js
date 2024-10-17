@@ -19,6 +19,8 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = 0; // Nombre total d'ennemis
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
     this.enemyText = null; // Texte pour afficher le compteur
+    this.inventaireText = null;
+    this.vieText = null;
     this.bootsImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
   }
@@ -93,7 +95,7 @@ export class MapScene extends Phaser.Scene {
       this.calque_plateformes
     );
 
-    this.lifeBar = this.add.sprite(16, 0, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
+    this.lifeBar = this.add.sprite(80, 10, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
 
@@ -108,8 +110,18 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = enemyObjects.length; // Nombre total d'ennemis au début
     this.defeatedEnemies = 0; // Initialiser le nombre d'ennemis vaincus à 0
 
-    this.enemyText = this.add.text(16, 50, `Ennemis battus: 0/${this.totalEnemies}`, {
-      font: '36px EnchantedLand',
+    this.enemyText = this.add.text(500, 10, `Ennemis battus: 0/${this.totalEnemies}`, {
+      font: '48px EnchantedLand',
+      fill: '#ffffff'
+    }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
+
+    this.vieText = this.add.text(16, 10, `Vie:`, {
+      font: '48px EnchantedLand',
+      fill: '#ffffff'
+    }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
+
+    this.inventaireText = this.add.text(1040, 10, `Inventaire`, {
+      font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
     
@@ -405,23 +417,23 @@ checkProximity() {
 
   createUIObjects() {
     // Créer une image pour les bottes
-    this.swordImage = this.add.image(944, 16, "sword").setOrigin(0, 0).setScale(2);
+    this.swordImage = this.add.image(944, 70, "sword").setOrigin(0, 0).setScale(2);
     this.swordImage.setTint(0x000000); // Applique une teinte noire
     this.swordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.dashImage = this.add.image(1008, 16, "dash").setOrigin(0, 0).setScale(2);
+    this.dashImage = this.add.image(1008, 70, "dash").setOrigin(0, 0).setScale(2);
     this.dashImage.setTint(0x000000); // Applique une teinte noire
     this.dashImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.bootsImage = this.add.image(1072, 16, "boots").setOrigin(0, 0).setScale(2);
+    this.bootsImage = this.add.image(1072, 70, "boots").setOrigin(0, 0).setScale(2);
     this.bootsImage.setTint(0x000000); // Applique une teinte noire
     this.bootsImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.dreamSwordImage = this.add.image(1136, 16, "upgraded_sword").setOrigin(0, 0).setScale(2);
+    this.dreamSwordImage = this.add.image(1136, 70, "upgraded_sword").setOrigin(0, 0).setScale(2);
     this.dreamSwordImage.setTint(0x000000); // Applique une teinte noire
     this.dreamSwordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.diamondHeartImage = this.add.image(1200, 16, "diamond_heart").setOrigin(0, 0).setScale(2);
+    this.diamondHeartImage = this.add.image(1200, 70, "diamond_heart").setOrigin(0, 0).setScale(2);
     this.diamondHeartImage.setTint(0x000000); // Applique une teinte noire
     this.diamondHeartImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
   }
