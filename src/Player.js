@@ -27,7 +27,7 @@ export class Player {
       Phaser.Input.Keyboard.KeyCodes.X // Change 'Z' to 'X' for dash
     );
 
-    this.hasDoubleJump = false;
+    this.hasTripleJump = true;
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
@@ -79,7 +79,7 @@ export class Player {
     if (this.player) {
       this.player.body.setEnable(false); // Désactiver la physique
       this.player.setVisible(false); // Rendre le joueur invisible
-      this.player.destroy(); // Détruit le joueur quand il n'a plus de vie
+      this.player.body.destroy(); // Détruit le joueur quand il n'a plus de vie
       this.player = null; // Assurez-vous que this.player est null
       this.scene.scene.get("MapScene").mapMusic.stop();
       this.scene.scene.stop("MapScene");
@@ -515,10 +515,10 @@ export class Player {
 
   collectBoots() {
     this.scene.sound.play("objectSound");
-    this.hasDoubleJump = true; // Active le double saut
+    this.hasTripleJump = true; // Active le double saut
     this.scene.updateBootsUI(); // Met à jour l'affichage des bottes
     this.scene.showNotification(
-      "Vous avez trouvé les bottes dorées ! Appuyez deux fois sur ESPACE pour effectuer un double saut."
+      "Vous avez trouvé les bottes dorées ! Appuyez trois fois sur ESPACE pour effectuer un triple saut."
     );
   }
 
@@ -536,13 +536,19 @@ export class Player {
         this.nbSaut++;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
-      } else if (this.nbSaut === 1 && this.hasDoubleJump) {
+      } else if (this.nbSaut === 1 && this.hasTripleJump) {
         // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
-        this.doubleSaut = false; // Désactiver le double saut
         this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
-        this.doubleSaut = false;
+        this.player.anims.play("anim_saut", true);
+        this.scene.sound.play("jumpSound"); // Jouer le son de saut
+      } else if (this.nbSaut === 2 && this.hasTripleJump) {
+        // Double saut
+        this.player.setVelocityY(-330);
+        this.nbSaut++;
+        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        this.tripleSaut = false;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
       }
