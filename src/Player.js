@@ -249,6 +249,7 @@ export class Player {
         this.scene.time.now > this.lastShootTime + this.shootCooldown
       ) {
         this.shoot(); // Appelle la méthode de tir
+        this.canAttackAgain = true;
         this.lastShootTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
       } else {
         this.player.anims.play("anim_attaque", true);

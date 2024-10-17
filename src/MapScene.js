@@ -281,7 +281,7 @@ export class MapScene extends Phaser.Scene {
 
   update() {
     // Mettre à jour le joueur
-    if (this.player) {
+    if (this.player && this.player.player) {
       this.player.update();
       //console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
     }
@@ -299,7 +299,6 @@ export class MapScene extends Phaser.Scene {
       this.player.decreaseLife(); // Enlève une vie
     }
 
-    // Mettre à jour tous les ennemis dans this.enemies
     this.enemies.children.iterate((enemySprite) => {
       // Vérifier si une instance complète d'ennemi existe
       if (enemySprite.instance && enemySprite.instance.update) {
@@ -310,10 +309,10 @@ export class MapScene extends Phaser.Scene {
     
 
   // Vérifier si tous les ennemis sont battus
-    if (this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
+    if (this.player && this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
       this.checkVictoryCondition(); // Appelle une méthode pour gérer la fin
     }
-
+    if (this.player.player){
     this.enemies.children.iterate(enemy => {
       // Calculer la distance entre le joueur et l'ennemi
       const distance = Phaser.Math.Distance.Between(this.player.player.x, this.player.player.y, enemy.x, enemy.y);
@@ -348,9 +347,8 @@ export class MapScene extends Phaser.Scene {
           enemy.alerted = false; // Permet de réafficher le texte si le joueur se rapproche à nouveau
       }
   });
-  
-
-  }
+}
+}
 //--------------------------------------------------------------
 checkProximity() {
   this.enemies.children.iterate((enemySprite) => {
@@ -384,7 +382,7 @@ checkProximity() {
 
   updateEnemyText() {
     // Vérifie si l'ennemiText et le joueur existent avant de mettre à jour le texte
-    if (this.enemyText && this.player) {
+    if (this.enemyText && this.enemy && this.player) {
       this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
     } else {
       console.warn("Impossible de mettre à jour le texte des ennemis battus. L'élément texte ou le joueur est manquant.");
@@ -393,21 +391,31 @@ checkProximity() {
 
 
   updateLifeDisplay() {
-    // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
-    let lifePoints = this.player.lifePoints;
-
-    // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints === 5) {
-      this.lifeBar.setTexture("full");
-    } else if (lifePoints === 4) {
-      this.lifeBar.setTexture("1hit");
-    } else if (lifePoints === 3) {
-      this.lifeBar.setTexture("2hit");
-    } else if (lifePoints === 2) {
-      this.lifeBar.setTexture("3hit");
-    } else if (lifePoints === 1) {
-      this.lifeBar.setTexture("4hit");
-    }
+      // Vérifie que le joueur existe avant de tenter d'accéder à ses propriétés
+      if (!this.player) {
+        console.error("Le joueur n'est pas défini !");
+        return;
+      }
+    
+      // Vérifie que la barre de vie existe
+      if (!this.lifeBar) {
+        console.error("La barre de vie n'est pas définie !");
+        return;
+      }
+      
+      let lifePoints = this.player.lifePoints;
+      // Change l'image de la barre de vie selon les vies restantes
+      if (lifePoints === 5) {
+        this.lifeBar.setTexture("full");
+      } else if (lifePoints === 4) {
+        this.lifeBar.setTexture("1hit");
+      } else if (lifePoints === 3) {
+        this.lifeBar.setTexture("2hit");
+      } else if (lifePoints === 2) {
+        this.lifeBar.setTexture("3hit");
+      } else if (lifePoints === 1) {
+        this.lifeBar.setTexture("4hit");
+      }
   }
 
   handleDeath() {
