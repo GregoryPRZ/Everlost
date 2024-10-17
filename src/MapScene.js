@@ -19,6 +19,8 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = 0; // Nombre total d'ennemis
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
     this.enemyText = null; // Texte pour afficher le compteur
+    this.inventaireText = null;
+    this.vieText = null;
     this.bootsImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
   }
@@ -93,7 +95,7 @@ export class MapScene extends Phaser.Scene {
       this.calque_plateformes
     );
 
-    this.lifeBar = this.add.sprite(16, 0, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
+    this.lifeBar = this.add.sprite(80, 10, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
 
@@ -108,8 +110,18 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = enemyObjects.length; // Nombre total d'ennemis au début
     this.defeatedEnemies = 0; // Initialiser le nombre d'ennemis vaincus à 0
 
-    this.enemyText = this.add.text(16, 50, `Ennemis battus: 0/${this.totalEnemies}`, {
-      font: '36px EnchantedLand',
+    this.enemyText = this.add.text(500, 10, `Ennemis battus: 0/${this.totalEnemies}`, {
+      font: '48px EnchantedLand',
+      fill: '#ffffff'
+    }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
+
+    this.vieText = this.add.text(16, 10, `Vie:`, {
+      font: '48px EnchantedLand',
+      fill: '#ffffff'
+    }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
+
+    this.inventaireText = this.add.text(1040, 10, `Inventaire`, {
+      font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
     
@@ -269,7 +281,7 @@ export class MapScene extends Phaser.Scene {
 
   update() {
     // Mettre à jour le joueur
-    if (this.player) {
+    if (this.player && this.player.player) {
       this.player.update();
       //console.log("Player update appelé"); // Débogage : Suivre les mises à jour du joueur
     }
@@ -287,7 +299,6 @@ export class MapScene extends Phaser.Scene {
       this.player.decreaseLife(); // Enlève une vie
     }
 
-    // Mettre à jour tous les ennemis dans this.enemies
     this.enemies.children.iterate((enemySprite) => {
       // Vérifier si une instance complète d'ennemi existe
       if (enemySprite.instance && enemySprite.instance.update) {
@@ -298,10 +309,10 @@ export class MapScene extends Phaser.Scene {
     
 
   // Vérifier si tous les ennemis sont battus
-    if (this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
+    if (this.player && this.enemies.countActive(true) === 0) { // Vérifie si aucun ennemi n'est actif
       this.checkVictoryCondition(); // Appelle une méthode pour gérer la fin
     }
-
+    if (this.player.player){
     this.enemies.children.iterate(enemy => {
       // Calculer la distance entre le joueur et l'ennemi
       const distance = Phaser.Math.Distance.Between(this.player.player.x, this.player.player.y, enemy.x, enemy.y);
@@ -336,9 +347,8 @@ export class MapScene extends Phaser.Scene {
           enemy.alerted = false; // Permet de réafficher le texte si le joueur se rapproche à nouveau
       }
   });
-  
-
-  }
+}
+}
 //--------------------------------------------------------------
 checkProximity() {
   this.enemies.children.iterate((enemySprite) => {
@@ -372,7 +382,7 @@ checkProximity() {
 
   updateEnemyText() {
     // Vérifie si l'ennemiText et le joueur existent avant de mettre à jour le texte
-    if (this.enemyText && this.player) {
+    if (this.enemyText && this.enemy && this.player) {
       this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
     } else {
       console.warn("Impossible de mettre à jour le texte des ennemis battus. L'élément texte ou le joueur est manquant.");
@@ -381,21 +391,31 @@ checkProximity() {
 
 
   updateLifeDisplay() {
-    // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
-    let lifePoints = this.player.lifePoints;
-
-    // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints === 5) {
-      this.lifeBar.setTexture("full");
-    } else if (lifePoints === 4) {
-      this.lifeBar.setTexture("1hit");
-    } else if (lifePoints === 3) {
-      this.lifeBar.setTexture("2hit");
-    } else if (lifePoints === 2) {
-      this.lifeBar.setTexture("3hit");
-    } else if (lifePoints === 1) {
-      this.lifeBar.setTexture("4hit");
-    }
+      // Vérifie que le joueur existe avant de tenter d'accéder à ses propriétés
+      if (!this.player) {
+        console.error("Le joueur n'est pas défini !");
+        return;
+      }
+    
+      // Vérifie que la barre de vie existe
+      if (!this.lifeBar) {
+        console.error("La barre de vie n'est pas définie !");
+        return;
+      }
+      
+      let lifePoints = this.player.lifePoints;
+      // Change l'image de la barre de vie selon les vies restantes
+      if (lifePoints === 5) {
+        this.lifeBar.setTexture("full");
+      } else if (lifePoints === 4) {
+        this.lifeBar.setTexture("1hit");
+      } else if (lifePoints === 3) {
+        this.lifeBar.setTexture("2hit");
+      } else if (lifePoints === 2) {
+        this.lifeBar.setTexture("3hit");
+      } else if (lifePoints === 1) {
+        this.lifeBar.setTexture("4hit");
+      }
   }
 
   handleDeath() {
@@ -405,23 +425,23 @@ checkProximity() {
 
   createUIObjects() {
     // Créer une image pour les bottes
-    this.swordImage = this.add.image(944, 16, "sword").setOrigin(0, 0).setScale(2);
+    this.swordImage = this.add.image(944, 70, "sword").setOrigin(0, 0).setScale(2);
     this.swordImage.setTint(0x000000); // Applique une teinte noire
     this.swordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.dashImage = this.add.image(1008, 16, "dash").setOrigin(0, 0).setScale(2);
+    this.dashImage = this.add.image(1008, 70, "dash").setOrigin(0, 0).setScale(2);
     this.dashImage.setTint(0x000000); // Applique une teinte noire
     this.dashImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.bootsImage = this.add.image(1072, 16, "boots").setOrigin(0, 0).setScale(2);
+    this.bootsImage = this.add.image(1072, 70, "boots").setOrigin(0, 0).setScale(2);
     this.bootsImage.setTint(0x000000); // Applique une teinte noire
     this.bootsImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.dreamSwordImage = this.add.image(1136, 16, "upgraded_sword").setOrigin(0, 0).setScale(2);
+    this.dreamSwordImage = this.add.image(1136, 70, "upgraded_sword").setOrigin(0, 0).setScale(2);
     this.dreamSwordImage.setTint(0x000000); // Applique une teinte noire
     this.dreamSwordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
-    this.diamondHeartImage = this.add.image(1200, 16, "diamond_heart").setOrigin(0, 0).setScale(2);
+    this.diamondHeartImage = this.add.image(1200, 70, "diamond_heart").setOrigin(0, 0).setScale(2);
     this.diamondHeartImage.setTint(0x000000); // Applique une teinte noire
     this.diamondHeartImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
   }
