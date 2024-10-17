@@ -27,12 +27,12 @@ export class Player {
       Phaser.Input.Keyboard.KeyCodes.X // Change 'Z' to 'X' for dash
     );
 
-    this.hasTripleJump = true;
-    this.canUseDash = false; // Le dash n'est pas disponible au début
+    this.hasTripleJump = false;
+    this.canUseDash = true; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
     this.canShoot = false;
-    this.canAttack = false;
+    this.canAttack = true;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -40,6 +40,14 @@ export class Player {
     this.dashTime = 150; // Durée du dash en ms
     this.dashCooldown = 500; // Cooldown avant de pouvoir re-dasher
     this.isMoving = false; // Variable pour suivre si le joueur est en mouvement
+
+    // Créer la barre de progression
+    this.cooldownBar = this.scene.add.graphics();
+    this.cooldownBar.setDepth(10); // S'assurer que la barre soit visible au-dessus des autres éléments
+
+    this.barWidth = 50; // Largeur de la barre
+    this.barHeight = 5; // Hauteur de la barre
+    this.cooldownPercentage = 0; // Initialement, la barre est vide
 
     this.lifePoints = 5; // Par exemple 5 vies
 
@@ -242,6 +250,7 @@ export class Player {
       this.canAttackAgain
     ) {
       this.canAttackAgain = false;
+      this.cooldownBar.visible = true; // Rendre la barre visible quand l'attaque est déclenchée
       this.player.body.setSize(46, 60); // Taille de la hitbox d'attaque
       this.player.body.setOffset(16, 0); // Ajuster l'offset si nécessaire
       if (
@@ -317,8 +326,30 @@ export class Player {
 
         // Détruire la hitbox après un court délai pour simuler un coup rapide
         this.scene.time.delayedCall(250, () => {
-          this.canAttackAgain = true;
           hitbox.destroy(); // Supprimer la hitbox après l'attaque
+        });
+
+        // Activer le cooldown de l'attaque avec une barre de progression
+        let cooldownDuration = 250; // Durée totale du cooldown
+        let elapsed = 0;
+
+
+        // Gestion du cooldown via un événement répété
+        const cooldownEvent = this.scene.time.addEvent({
+          delay: 50,
+          repeat: cooldownDuration / 50 - 1, // Répéter le nombre de fois requis pour la durée complète
+          callback: () => {
+            elapsed += 50;
+            let percentage = elapsed / cooldownDuration;
+            this.updateCooldownBar(percentage);
+          
+            if (percentage >= 1) {
+              this.canAttackAgain = true;
+              this.updateCooldownBar(0); // Réinitialiser la barre de progression
+              this.cooldownBar.visible = false; // Cacher la barre après le cooldown
+              cooldownEvent.remove(); // Stopper l'événement pour éviter des appels répétés
+            }
+          },
         });
       }
     }
@@ -573,12 +604,32 @@ export class Player {
         this.player.setVelocityX(0); // Arrêter le dash
       });
     } else if (this.keyX.isDown && this.canUseDash) {
-      this.isDashing = true;
-      this.scene.sound.play("dashSound"); // Jouer le son de saut
       this.canUseDash = false;
-      this.scene.time.delayedCall(this.dashCooldown, () => {
-        this.canUseDash = true; // Réactiver le dash après le cooldown
-      });
+      this.isDashing = true;
+      this.cooldownBar.visible = true; // Rendre la barre visible quand l'attaque est déclenchée
+      this.scene.sound.play("dashSound"); // Jouer le son de saut
+
+      // Activer le cooldown du dash avec une barre de progression
+      let cooldownDuration = this.dashCooldown;
+      let elapsed = 0;
+
+    // Gestion du cooldown via un événement répété
+    const cooldownEvent = this.scene.time.addEvent({
+      delay: 50,
+      repeat: cooldownDuration / 50 - 1, // Répéter le nombre de fois requis pour la durée complète
+      callback: () => {
+        elapsed += 50;
+        let percentage = elapsed / cooldownDuration;
+        this.updateCooldownBar(percentage);
+
+        if (percentage >= 1) {
+          this.canUseDash = true;
+          this.updateCooldownBar(0); // Réinitialiser la barre de progression
+          this.cooldownBar.visible = false; // Cacher la barre après le cooldown
+          cooldownEvent.remove(); // Stopper l'événement pour éviter des appels répétés
+        }
+      },
+    });
     }
   }
 
@@ -619,5 +670,26 @@ export class Player {
     this.scene.showNotification(
       "Vous avez trouvé le coeur de diamant ! Vous ressentez comme une sensation étrange..."
     );
+  }
+
+  updateCooldownBar(percentage) {
+    this.cooldownBar.clear(); // Efface l'ancienne barre
+
+    // Position de la barre par rapport au joueur (au-dessus de sa tête)
+    const barX = this.player.x - this.barWidth / 2;
+    const barY = this.player.y - this.player.height / 2 - 10;
+
+    // Fond de la barre (noir)
+    this.cooldownBar.fillStyle(0x000000, 1);
+    this.cooldownBar.fillRect(barX, barY, this.barWidth, this.barHeight);
+
+    // Remplissage de la barre (rouge)
+    this.cooldownBar.fillStyle(0x00ff00, 1);
+    this.cooldownBar.fillRect(barX, barY, this.barWidth * percentage, this.barHeight);
+
+    // Masquer la barre une fois pleine
+    if (percentage >= 1) {
+      this.cooldownBar.visible = false; // Rendre la barre invisible
+    }
   }
 }
