@@ -31,8 +31,8 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = true;
-    this.canAttack = true;
+    this.canShoot = false;
+    this.canAttack = false;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -602,8 +602,10 @@ export class Player {
 
   collectHeart() {
     this.scene.sound.play("objectSound");
-    this.lifePoints++;
-    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints < 5) {
+      this.lifePoints++;
+      this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+    }
   }
 
   collectDiamondHeart() {

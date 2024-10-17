@@ -484,8 +484,7 @@ export class Crow {
     this.enemy.body.allowGravity = false; // Pas de gravité
     console.log("Gravité activée : ", this.enemy.body.allowGravity);
 
-    this.health = 1;
-    this.speed = 100; // Vitesse de déplacement horizontal
+    this.speed = 200; // Vitesse de déplacement horizontal
     this.initialX = x;
     this.initialY = y; // Position Y initiale
     this.direction = 1; // Le corbeau commence en allant vers la droite
@@ -495,8 +494,8 @@ export class Crow {
     this.updateHealthBar();
     this.setupAnimations();
 
-    this.leftLimit = x - 150; // Limite gauche
-    this.rightLimit = x + 150; // Limite droite
+    this.leftLimit = x - 250; // Limite gauche
+    this.rightLimit = x + 250; // Limite droite
   }
 
   updateHealthBar() {
@@ -549,6 +548,20 @@ export class Crow {
   update() {
     this.move();
     this.updateHealthBar(); // Mettre à jour la barre de vie à chaque frame
+
+    // Crée un capteur juste devant le Blob pour détecter un mur
+    const sensorX = this.enemy.x + (this.direction * 20); // 20 pixels devant l'ennemi
+    const sensorY = this.enemy.y; // À la même hauteur que l'ennemi
+
+    // Vérifie s'il y a un mur devant le Blob
+    const tileAtFront = this.scene.calque_plateformes.getTileAtWorldXY(sensorX, sensorY);
+
+    // Si un mur est détecté devant, changer de direction
+    if (tileAtFront) {
+        console.log("Mur détecté, changement de direction !");
+        this.direction *= -1; // Change la direction
+    }
+
     this.enemy.y = this.initialY;
     this.enemy.setVelocityY(0); // Empêche tout mouvement vertical
   }
