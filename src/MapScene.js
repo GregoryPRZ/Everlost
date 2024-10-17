@@ -14,10 +14,13 @@ export class MapScene extends Phaser.Scene {
     this.player = null; // Ajouter le joueur ici
     this.enemies = null; // Pour stocker les ennemis
     this.enemyObjects = [];
+    this.enemyBullets = null;
     this.objects = []; // Nouveau tableau pour stocker les objets
     this.totalEnemies = 0; // Nombre total d'ennemis
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
     this.enemyText = null; // Texte pour afficher le compteur
+    this.bootsImage = null; // Image pour les bottes dans l'interface
+    this.notificationText = null; // Texte de la popup
   }
 
   preload() {
@@ -75,6 +78,8 @@ export class MapScene extends Phaser.Scene {
     // Configurer les collisions pour le calque des plateformes
     this.calque_plateformes.setCollisionByProperty({ estSolide: true });
     this.calque_echelle.setCollisionByProperty({ estEchelle: true }); // Ajouter collision pour les échelles
+    // Assurez-vous que les tuiles de ce calque sont solides (optionnel selon la configuration de Tiled)
+    this.calque_mort.setCollisionByProperty({ estMortel: true }); // Assurez-vous que cela correspond à la propriété que vous avez définie dans Tiled.
 
     this.physics.world.setBounds(0, 0, 7680, 6144);
     this.cameras.main.setBounds(0, 0, 7080, 6144);
@@ -84,14 +89,16 @@ export class MapScene extends Phaser.Scene {
       this,
       50,
       5900,
-      "img_perso",
+      "player_debout",
       this.calque_plateformes
     );
 
-    this.lifeBar = this.add.sprite(16, 16, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
+    this.lifeBar = this.add.sprite(16, 0, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
 
+    this.createUIObjects();  
+    
     this.enemies = this.physics.add.group(); // Groupe des ennemis
 
     // Obtenez les données d'ennemis depuis le calque de la carte
@@ -101,8 +108,8 @@ export class MapScene extends Phaser.Scene {
     this.totalEnemies = enemyObjects.length; // Nombre total d'ennemis au début
     this.defeatedEnemies = 0; // Initialiser le nombre d'ennemis vaincus à 0
 
-    this.enemyText = this.add.text(16, 75, `Ennemis battus: 0/${this.totalEnemies}`, {
-      fontSize: '20px',
+    this.enemyText = this.add.text(16, 50, `Ennemis battus: 0/${this.totalEnemies}`, {
+      font: '36px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
     
@@ -142,6 +149,8 @@ export class MapScene extends Phaser.Scene {
           break;
       }
 
+      this.enemyBullets = this.physics.add.group(); // Créer un groupe pour les balles des ennemis
+
       if (enemy) {
         // Ajouter l'ennemi complet au groupe this.enemies en tant qu'objet
         this.enemies.add(enemy.enemy); // Ajoute uniquement le sprite au groupe
@@ -151,41 +160,27 @@ export class MapScene extends Phaser.Scene {
 
         // Ajouter un événement quand un ennemi est vaincu
         enemy.enemy.on('destroy', () => {
+          console.log("Enemy destroyed:", enemy);
           this.defeatedEnemies++; // Incrémenter le nombre d'ennemis vaincus
-          if (this.player){
+          if (this.player && this.enemyText) {
+            if (this.player.lifePoints < 5) {
+              this.player.lifePoints++;
+              this.updateLifeDisplay();
+            }
             this.updateEnemyText(); // Mettre à jour le texte d'ennemis
+          } else {
+            console.warn("Le joueur ou enemyText est manquant.");
           }
         });
+        
+        
 
         enemy.enemy.setCollideWorldBounds(true); // Empêche les ennemis de sortir des limites
 
-         // Créer le texte au-dessus de l'ennemi 
-/*const enemyText = this.add.text(enemy.enemy.x, enemy.enemy.y - 60, 'Attention ennemi! \nAppuyez sur X pour tirer', {
-  fontSize: '22px', 
-  fill: '#ffffff', 
-  align: 'center',
-  stroke: '#ffffff', 
-  strokeThickness: 1, // Épaisseur du contour
-}).setOrigin(0.5, 0.5); // Centrer le texte
-
-// ombre au texte
-//enemyText.setShadow(2, 2, '#ffffff', 0.5);
-
-// fond semi-transparent derrière le texte
-const textBackground = this.add.graphics();
-textBackground.fillStyle(0xff0000, 0.3); // Couleur de fond
-textBackground.fillRect(enemyText.x - enemyText.width / 2 - 10, enemyText.y - enemyText.height / 2 - 10, enemyText.width + 20, enemyText.height + 20);
-
-// Supprimer le texte et le fond après 3 secondes
-this.time.delayedCall(3000, () => {
-  enemyText.destroy(); // Détruire le texte
-  textBackground.destroy(); // Détruire le fond
-});*/
-
-// Dans la fonction create()
-this.enemies.children.iterate(enemy => {
-  enemy.alerted = false; // Ajoute une propriété pour chaque ennemi
-});
+      // Dans la fonction create()
+      this.enemies.children.iterate(enemy => {
+        enemy.alerted = false; // Ajoute une propriété pour chaque ennemi
+      });
 
 
         console.log("Enemy created and added to group:", enemy);
@@ -251,6 +246,7 @@ this.enemies.children.iterate(enemy => {
     // Collisions
     this.physics.add.collider(this.enemies, this.calque_plateformes);
     this.physics.add.collider(this.player.player, this.calque_plateformes);
+    this.physics.add.collider(this.player.player, this.calque_mort, this.handleDeath, null, this);
     this.physics.add.overlap(this.player.player, this.calque_echelle,() => { this.player.onScaleOverlap(this.calque_echelle);}, null, this);
     this.physics.add.overlap(
       this.player.player,
@@ -311,16 +307,16 @@ this.enemies.children.iterate(enemy => {
       const distance = Phaser.Math.Distance.Between(this.player.player.x, this.player.player.y, enemy.x, enemy.y);
   
       // Définir une distance d'alerte
-      const alertDistance = 150; // Ajuste cette valeur selon tes besoins
+      const alertDistance = 300; // Ajuste cette valeur selon tes besoins
   
-      if (distance < alertDistance && !enemy.alerted) {
+      if (distance < alertDistance && !enemy.alerted && !this.player.canAttack) {
           // Créer un rectangle pour le fond
           const background = this.add.rectangle(enemy.x, enemy.y - 85, 320, 70, 0xff0000, 0.7).setOrigin(0.5, 0.5);
           background.setStrokeStyle(2, 0xffffff); // Bordure blanche pour le rectangle
           
           // Créer le texte d'alerte au-dessus de l'ennemi
-          const alertText = this.add.text(enemy.x, enemy.y - 80, "Attention Ennemis! Appuyer sur X pour tirer", {
-              fontSize: '20px',
+          const alertText = this.add.text(enemy.x, enemy.y - 80, "Attention à l'ennemi ! Vous n'avez pas encore d'arme.", {
+              font: '32px EnchantedLand',
               fill: '#ffffff',
               fontStyle: 'bold', 
               align: 'center',
@@ -366,35 +362,30 @@ checkProximity() {
 
   checkVictoryCondition() {
     if (this.player.hasDiamondHeart) {
-      // Si le joueur a le cœur de diamant, passer à une fin spéciale
-      this.scene.start("SpecialEnding");
+      this.mapMusic.stop(); // Lecture en boucle
+      this.scene.start("GoodEnd");
     } else {
-      // Sinon, passer à une fin normale
-      this.scene.start("NormalEnding");
+      this.mapMusic.stop(); // Lecture en boucle
+      this.scene.start("BadEnd");
     }
   }
 
   updateEnemyText() {
-    console.log("Vérification du joueur :", this.player);
-    console.log("Vérification du texte des ennemis :", this.enemyText);
-    if (this.player) { // Vérifie si le joueur existe
-        if (this.enemyText) {
-            this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
-        } else {
-            console.warn("Le texte des ennemis battus n'existe pas encore ou a été détruit.");
-        }
+    // Vérifie si l'ennemiText et le joueur existent avant de mettre à jour le texte
+    if (this.enemyText && this.player) {
+      this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
     } else {
-        console.warn("Le joueur a été détruit, le texte des ennemis ne sera pas mis à jour.");
+      console.warn("Impossible de mettre à jour le texte des ennemis battus. L'élément texte ou le joueur est manquant.");
     }
-}
+  }
 
 
   updateLifeDisplay() {
     // Change le sprite de la barre de vie en fonction du nombre de vies du joueur
-    const lifePoints = this.player.lifePoints;
+    let lifePoints = this.player.lifePoints;
 
     // Change l'image de la barre de vie selon les vies restantes
-    if (lifePoints >= 5) {
+    if (lifePoints === 5) {
       this.lifeBar.setTexture("full");
     } else if (lifePoints === 4) {
       this.lifeBar.setTexture("1hit");
@@ -405,5 +396,91 @@ checkProximity() {
     } else if (lifePoints === 1) {
       this.lifeBar.setTexture("4hit");
     }
+  }
+
+  handleDeath() {
+    console.log("Le joueur est mort !");
+    this.player.die(); // Appelle la méthode pour gérer la mort du joueur
+  }
+
+  createUIObjects() {
+    // Créer une image pour les bottes
+    this.swordImage = this.add.image(944, 16, "sword").setOrigin(0, 0).setScale(2);
+    this.swordImage.setTint(0x000000); // Applique une teinte noire
+    this.swordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+
+    this.dashImage = this.add.image(1008, 16, "dash").setOrigin(0, 0).setScale(2);
+    this.dashImage.setTint(0x000000); // Applique une teinte noire
+    this.dashImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+
+    this.bootsImage = this.add.image(1072, 16, "boots").setOrigin(0, 0).setScale(2);
+    this.bootsImage.setTint(0x000000); // Applique une teinte noire
+    this.bootsImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+
+    this.dreamSwordImage = this.add.image(1136, 16, "upgraded_sword").setOrigin(0, 0).setScale(2);
+    this.dreamSwordImage.setTint(0x000000); // Applique une teinte noire
+    this.dreamSwordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+
+    this.diamondHeartImage = this.add.image(1200, 16, "diamond_heart").setOrigin(0, 0).setScale(2);
+    this.diamondHeartImage.setTint(0x000000); // Applique une teinte noire
+    this.diamondHeartImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+  }
+
+  updateSwordUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.swordImage) {
+      this.swordImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateDashUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.dashImage) {
+      this.dashImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateBootsUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.bootsImage) {
+      this.bootsImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateDreamSwordUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.dreamSwordImage) {
+      this.dreamSwordImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  updateDiamondHeartUI() {
+    // Change la couleur des bottes en couleur normale
+    if (this.diamondHeartImage) {
+      this.diamondHeartImage.clearTint(); // Enlève la teinte noire
+    }
+  }
+
+  showNotification(message) {
+    // Si une notification existe déjà, la détruire avant d'en créer une nouvelle
+    if (this.notificationText) {
+      this.notificationText.destroy();
+    }
+
+    // Créer une nouvelle notification
+    this.notificationText = this.add.text(
+      this.cameras.main.width / 2,  // Centré horizontalement
+      this.cameras.main.height - 50, // Centré verticalement
+      message,
+      { font: '48px EnchantedLand', fill: '#ffffff', backgroundColor: '#00AAFF', padding: { left: 10, right: 10, top: 5, bottom: 5 } }
+    ).setOrigin(0.5); // Centrer l'origine pour que le texte soit au milieu
+
+    this.notificationText.setScrollFactor(0); // Fixe le texte pour qu'il reste à l'écran
+
+    // Faire disparaître la notification après 2 secondes
+    this.time.delayedCall(10000, () => {
+      this.notificationText.destroy(); // Supprimer la notification
+      this.notificationText = null;    // Réinitialiser la variable
+    });
   }
 }

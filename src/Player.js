@@ -31,8 +31,9 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = true;
-    this.canAttack = true;
+    this.canShoot = false;
+    this.canAttack = false;
+    this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
     this.dashSpeed = 500;
@@ -211,16 +212,21 @@ blinkRed() {
   collectSword() {
     this.scene.sound.play('objectSound');
     this.canAttack = true;
+    this.scene.updateSwordUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé une épée ! Appuyez sur X pour attaquer les ennemis.");
   }
 
   collectDreamSword() {
     this.scene.sound.play('objectSound');
     this.canShoot = true;
+    this.scene.updateDreamSwordUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé l'épée des rêves ! Appuyez sur X pour tirer sur les ennemis et drainer leur vie.");
   }
 
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack) {
-      this.player.body.setSize(60, 60);
+    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack && this.canAttackAgain) {
+      this.canAttackAgain = false;
+      this.player.body.setSize(34, 60);
       if (this.canShoot && this.scene.time.now > this.lastShootTime + this.shootCooldown) {
         this.shoot(); // Appelle la méthode de tir
         this.lastShootTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
@@ -230,10 +236,10 @@ blinkRed() {
         
       // Créer une hitbox temporaire pour l'attaque
       let hitbox = this.scene.add.rectangle(
-        this.player.x + (this.player.flipX ? -30 : 30), // Position ajustée selon la direction du joueur
+        this.player.x + (this.player.flipX ? -50 : 50), // Position ajustée selon la direction du joueur
         this.player.y,
-        50, // Largeur de la hitbox
-        50, // Hauteur de la hitbox
+        100, // Largeur de la hitbox
+        40, // Hauteur de la hitbox
         0xff0000, // Couleur rouge pour visualiser la hitbox (peut être caché plus tard)
         0 // Opacité de 0 (invisible)
       );
@@ -241,6 +247,11 @@ blinkRed() {
       // Activer la physique sur la hitbox
       this.scene.physics.add.existing(hitbox);
       hitbox.body.setAllowGravity(false); // La hitbox ne doit pas être affectée par la gravité
+
+        // Ajouter l'overlap entre la hitbox et les balles des ennemis
+        this.scene.physics.add.overlap(hitbox, this.scene.enemyBullets, (hitbox, bullet) => {
+          bullet.destroy(); // Détruire la balle si elle touche la hitbox d'attaque
+      });
 
       // Détection des collisions avec les ennemis
       this.scene.physics.add.overlap(hitbox, this.scene.enemies, (hitbox, enemySprite) => {
@@ -252,7 +263,8 @@ blinkRed() {
       });
 
       // Détruire la hitbox après un court délai pour simuler un coup rapide
-      this.scene.time.delayedCall(200, () => {
+      this.scene.time.delayedCall(250, () => {
+        this.canAttackAgain = true;
         hitbox.destroy(); // Supprimer la hitbox après l'attaque
       });
       }
@@ -358,38 +370,51 @@ AnimMouvement() {
       this.player.anims.play("anim_baisser", true); // Jouer l'animation de se baisser
     }
   } else {
-    // Gestion normale du mouvement si la flèche du bas n'est pas enfoncée
+    // Vérifier s'il y a une plateforme juste au-dessus du joueur
+    const headTile = this.scene.calque_plateformes.getTileAtWorldXY(
+      this.player.x, // Position du joueur
+      this.player.y - this.player.height / 2 // Vérifier juste au-dessus de la tête du joueur
+    );
 
-    if (this.clavier.left.isDown) {
-      this.player.setVelocityX(-160); // Vitesse vers la gauche
-      this.player.flipX = true; // Miroir du sprite vers la gauche
+    // Ne permettre au joueur de se relever que s'il n'y a pas de plateforme solide au-dessus
+    if (!this.clavier.down.isDown && (!headTile || !headTile.properties.estSolide)) {
+      this.player.body.setSize(34, 60); // Taille normale debout
+      this.player.body.setOffset(16, 0);
+    }
 
-      // Si le joueur est en l'air, jouer l'animation de saut
-      if (!this.player.body.blocked.down) {
-        this.player.anims.play("anim_saut", true);
+  // Ne relever le joueur que s'il n'y a pas de tuile solide au-dessus
+  if (!headTile) {
+      if (this.clavier.left.isDown) {
+        this.player.setVelocityX(-160); // Vitesse vers la gauche
+        this.player.flipX = true; // Miroir du sprite vers la gauche
+
+        // Si le joueur est en l'air, jouer l'animation de saut
+        if (!this.player.body.blocked.down) {
+          this.player.anims.play("anim_saut", true);
+        } else {
+          this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
+        }
+        this.playFootstepSound(); // Jouer le son de pas
+      } else if (this.clavier.right.isDown) {
+        this.player.setVelocityX(160); // Vitesse vers la droite
+        this.player.flipX = false; // Normal
+
+        // Si le joueur est en l'air, jouer l'animation de saut
+        if (!this.player.body.blocked.down) {
+          this.player.anims.play("anim_saut", true);
+        } else {
+          this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
+        }
+        this.playFootstepSound(); // Jouer le son de pas
       } else {
-        this.player.anims.play("anim_tourne_gauche", true); // Jouer l'animation de marche gauche
-      }
-      this.playFootstepSound(); // Jouer le son de pas
-    } else if (this.clavier.right.isDown) {
-      this.player.setVelocityX(160); // Vitesse vers la droite
-      this.player.flipX = false; // Normal
+        this.player.setVelocityX(0); // Arrêter le mouvement
 
-      // Si le joueur est en l'air, jouer l'animation de saut
-      if (!this.player.body.blocked.down) {
-        this.player.anims.play("anim_saut", true);
-      } else {
-        this.player.anims.play("anim_tourne_droite", true); // Jouer l'animation de marche droite
-      }
-      this.playFootstepSound(); // Jouer le son de pas
-    } else {
-      this.player.setVelocityX(0); // Arrêter le mouvement
-
-      // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
-      if (this.player.body.blocked.down) {
-        this.player.anims.play("anim_face", true); // Jouer l'animation face
-      } else {
-        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        // Si le joueur est au sol, jouer l'animation de face, sinon jouer l'animation de saut
+        if (this.player.body.blocked.down) {
+          this.player.anims.play("anim_face", true); // Jouer l'animation face
+        } else {
+          this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
+        }
       }
     }
   }
@@ -412,6 +437,8 @@ playFootstepSound() {
 collectBoots() {
   this.scene.sound.play('objectSound');
   this.hasDoubleJump = true; // Active le double saut
+  this.scene.updateBootsUI(); // Met à jour l'affichage des bottes
+  this.scene.showNotification("Vous avez trouvé les bottes dorées ! Appuyez deux fois sur ESPACE pour effectuer un double saut.");
 }
 
 
@@ -445,6 +472,8 @@ collectBoots() {
   collectDash() {
     this.scene.sound.play('objectSound');
     this.canUseDash = true; // Active le dash
+    this.scene.updateDashUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé le badge d'accélération ! Appuyez sur Z pour effectuer une ruée.");
   }
 
   AnimDash() {
@@ -492,7 +521,11 @@ collectBoots() {
   collectDiamondHeart() {
     this.hasDiamondHeart = true;
     this.scene.sound.play('objectSound');
-    this.lifePoints = 10;
-    this.scene.updateLifeDisplay(); // Mets à jour l'interface des vies
+    if (this.lifePoints < 5) {
+      this.lifePoints++;
+      this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
+    }
+    this.scene.updateDiamondHeartUI(); // Met à jour l'affichage des bottes
+    this.scene.showNotification("Vous avez trouvé le coeur de diamant ! Vous ressentez comme une sensation étrange...");
   }
 }

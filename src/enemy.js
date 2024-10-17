@@ -18,31 +18,40 @@ export class Blob {
     this.rightLimit = x + 100; // Limite droite
     this.enemy.body.setSize(32, 32);
     this.enemy.body.setOffset(16, 32);
+    this.healthBar = this.scene.add.graphics();
 
+    this.updateHealthBar();
     this.setupAnimations();
+  }
+
+  updateHealthBar() {
+      this.healthBar.clear(); // Efface l'ancienne barre
+      const width = 50; // Largeur de la barre de vie
+      const height = 5; // Hauteur de la barre de vie
+      const healthPercentage = this.lifePoints / 3; // Supposons que 3 est le maximum de points de vie
+
+      // Dessine le fond de la barre de vie
+      this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+      this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+      // Dessine la barre de vie
+      this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+      this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
     this.scene.anims.create({
-      key: "enemy_gauche",
+      key: "blob_anim",
       frames: this.scene.anims.generateFrameNumbers("enemi", {
         start: 0,
-        end: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.scene.anims.create({
-      key: "enemy_droite",
-      frames: this.scene.anims.generateFrameNumbers("enemi", {
-        start: 4,
         end: 7,
       }),
       frameRate: 10,
       repeat: -1,
     });
+    this.enemy.play("blob_anim"); // Joue l'animation pour aller à droite
   }
+
   // Gérer la collision avec une plateforme
   handlePlatformCollision() {
     console.log("Collision détectée, changement de direction !");
@@ -53,6 +62,7 @@ export class Blob {
   // Mettre à jour l'ennemi à chaque frame
   update() {
     this.move();
+    this.updateHealthBar(); // Mettre à jour la barre de vie à chaque frame
     if (!this.scene.player.player) return;
     const distanceToPlayer = Phaser.Math.Distance.Between(
       this.enemy.x,
@@ -107,14 +117,11 @@ export class Blob {
 
     // Déplacement de l'ennemi
     this.enemy.setVelocityX(this.speed * this.direction);
-
     // Animation et inversion de l'échelle selon la direction
     if (this.direction === 1) {
-      this.enemy.play("enemy_droite", true); // Joue l'animation pour aller à droite
-      this.enemy.setFlipX(false); // Remet à l'échelle normale pour aller à droite
+      this.enemy.setFlipX(true); // Remet à l'échelle normale pour aller à droite
     } else {
-      this.enemy.play("enemy_gauche", true); // Joue l'animation pour aller à gauche
-      this.enemy.setFlipX(true); // Inverse l'échelle pour tourner l'ennemi vers la gauche
+      this.enemy.setFlipX(false); // Inverse l'échelle pour tourner l'ennemi vers la gauche
     }
   }
 
@@ -142,6 +149,7 @@ export class Blob {
       this.enemy.y,
       "bullet"
     );
+    this.scene.enemyBullets.add(bullet); // Ajouter la balle au groupe enemyBullets
 
     // Calculer le vecteur directionnel vers le joueur
     const playerX = this.scene.player.player.x;
@@ -181,8 +189,10 @@ export class Blob {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
@@ -231,30 +241,29 @@ export class CarnivorousPlant {
     this.enemy.setImmovable(true);
     this.enemy.body.allowGravity = false;
 
-    // Créer un capteur circulaire autour de la plante
-    this.attackRadius = 80; // Rayon du capteur
-    this.attackSensor = this.scene.add
-      .zone(x, y)
-      .setSize(this.attackRadius * 2, this.attackRadius * 2);
-    this.attackSensor.setOrigin(0.5, 0.5);
+    this.healthBar = this.scene.add.graphics();
+  
+    // Propriétés pour le tir
+    this.shootCooldown = 2000; // Délai entre les tirs en millisecondes
+    this.lastShotTime = 0; // Dernière fois où la plante a tiré
 
-    // Activer la physique sur le capteur
-    this.scene.physics.world.enable(this.attackSensor);
-    this.attackSensor.body.setAllowGravity(false);
-    this.attackSensor.body.setImmovable(true);
-
-    // Configurer les animations de la plante
+    this.updateHealthBar();
     this.setupAnimations();
+  }
 
-    // Vérifier les collisions entre le capteur et le joueur
-    this.scene.physics.add.collider(
-      this.attackSensor,
-      this.player,
-      this.startAttack.bind(this),
-      null,
-      this
-    );
-    console.log("Capteur d'attaque configuré.");
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 4; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -279,49 +288,103 @@ export class CarnivorousPlant {
           end: 7,
         }
       ),
-      frameRate: 10,
+      frameRate: 30,
       repeat: 0, // L'animation ne se joue qu'une seule fois
     });
 
     // Lancer l'animation "idle" par défaut
     this.enemy.play("idle");
-    console.log("Animation 'idle' lancée.");
-  }
-
-  startAttack() {
-    if (this.isAttacking) return; // Si déjà en attaque, ne rien faire
-
-    this.isAttacking = true; // Indiquer que l'attaque commence
-
-    console.log("L'attaque commence. Animation 'attack' lancée.");
-    // Lancer l'animation d'attaque
-    this.enemy.play("attack");
-
-    // Infliger des dégâts au joueur
-    this.player.takeDamage(1);
-    console.log("Le joueur subit 1 point de dégâts.");
-
-    // Revenir à l'état "idle" après l'attaque (1 seconde après)
-    this.scene.time.delayedCall(1000, this.stopAttack, [], this);
-  }
-
-  stopAttack() {
-    this.isAttacking = false; // Attaque terminée
-    this.enemy.play("idle"); // Revenir à l'animation idle
-    console.log("Attaque terminée. Retour à l'animation 'idle'.");
   }
 
   update() {
-    // Aucune vérification manuelle ici, car l'overlap est géré par Phaser
+    if (!this.scene.player.player) return; // Assurez-vous que le joueur existe
+    this.enemy.flipX = this.scene.player.player.x > this.enemy.x; // Si le joueur est à gauche, flipX = true
+
+    const distanceToPlayer = Phaser.Math.Distance.Between(
+      this.enemy.x,
+      this.enemy.y,
+      this.scene.player.player.x,
+      this.scene.player.player.y
+    ); // Accès à la position du joueur
+
+    // Vérifier si le joueur est à portée et si le délai entre les tirs est respecté
+    if (
+      distanceToPlayer < 300 &&
+      this.scene.time.now > this.lastShotTime + this.shootCooldown
+    ) {
+      this.shoot();
+      this.lastShotTime = this.scene.time.now; // Mettre à jour le temps du dernier tir
+    }
   }
+
+  shoot() {
+    this.scene.sound.play('poisonSound'); // Jouer le son d'attaque
+    this.enemy.play("attack", true);
+    // Créer une balle à la position actuelle du joueur
+    const bullet = this.scene.physics.add.sprite(this.enemy.x, this.enemy.y - 10, 'bullet');
+    this.scene.enemyBullets.add(bullet); // Ajouter la balle au groupe enemyBullets
+
+  // Vérifier la direction du joueur et ajuster la vitesse de la balle
+  const direction = this.enemy.flipX ? 1 : -1; // Si le joueur est orienté à gauche, la balle va à gauche
+
+  bullet.startX = this.enemy.x;
+  const maxDistance = 300; // Distance maximale que la balle peut parcourir (ajuster selon besoin)
+
+  bullet.setVelocityX(200 * direction); // Vitesse de la balle (600 peut être ajusté)
+  
+  // Assurer que la balle ne soit pas affectée par la gravité
+  bullet.body.setAllowGravity(false);
+
+  // Détruire la balle lorsqu'elle sort des limites du monde
+  bullet.setCollideWorldBounds(true);
+  bullet.body.onWorldBounds = true;
+  bullet.body.world.on('worldbounds', () => {
+    bullet.destroy(); // Supprimer la balle lorsqu'elle sort du cadre
+  });
+
+  // Ajouter une fonction de mise à jour pour vérifier la distance parcourue
+  bullet.update = () => {
+    const distanceTravelled = Math.abs(bullet.x - bullet.startX);
+    if (distanceTravelled > maxDistance) {
+      bullet.destroy(); // Détruire la balle si elle dépasse la distance maximale
+    }
+  };
+
+  this.scene.physics.world.on('worldstep', () => {
+    if (bullet.active) {
+      bullet.update();
+    }
+  });
+
+
+    // Gérer la collision entre la balle et le joueur
+    this.scene.physics.add.collider(bullet, this.scene.player.player, () => {
+      console.log("Le joueur est touché !");
+      bullet.destroy(); // Détruit la balle lorsqu'elle touche le joueur
+      // Ajoute ici la logique pour réduire les points de vie du joueur si nécessaire
+      this.scene.player.takeDamage(); // Appelle la fonction pour réduire les vies et clignoter
+    });
+    this.scene.physics.add.collider(
+      bullet,
+      this.scene.calque_plateformes,
+      () => {
+        bullet.destroy(); // Détruit la balle lorsqu'elle touche une plateforme
+      }
+    );
+
+  // Désactiver toute interaction physique (poussée) entre la balle et l'ennemi
+  bullet.body.setImmovable(true); // La balle ne bouge pas lorsqu'elle touche un ennemi
+}
 
   takeDamage() {
     if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
@@ -366,7 +429,26 @@ export class Vine {
     this.lifePoints = 1;
     this.enemy.instance = this;
 
+    this.healthBar = this.scene.add.graphics();
+
+    this.updateHealthBar();
+
     this.setupAnimations();
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 1; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -390,8 +472,10 @@ export class Vine {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   }
@@ -416,10 +500,28 @@ export class Crow {
     this.initialY = y;
     this.direction = -1; // Le corbeau commence en allant vers la gauche
     this.enemy.setFlipX(true);
+    this.healthBar = this.scene.add.graphics();
+
+    this.updateHealthBar();
     this.setupAnimations();
 
     this.isDiving = false;
     this.distanceTraveled = 0; // Nouvelle propriété pour suivre la distance parcourue
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear(); // Efface l'ancienne barre
+    const width = 50; // Largeur de la barre de vie
+    const height = 5; // Hauteur de la barre de vie
+    const healthPercentage = this.lifePoints / 2; // Supposons que 3 est le maximum de points de vie
+
+    // Dessine le fond de la barre de vie
+    this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+
+    // Dessine la barre de vie
+    this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -555,8 +657,10 @@ export class Crow {
     this.scene.sound.play('hurtSound');
     this.lifePoints--; // Réduit la vie du joueur
     this.isInvincible = true; // Rend le joueur temporairement invincible
+    this.updateHealthBar(); // Met à jour la barre de vie après avoir pris des dégâts
     if (this.lifePoints <= 0) {
         this.enemy.destroy(); // Appelle une méthode pour gérer la mort du joueur
+        this.healthBar.destroy();
         return; // Sort de la méthode
     }
   
