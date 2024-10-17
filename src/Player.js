@@ -33,6 +33,7 @@ export class Player {
     // Variables pour le dash
     this.canShoot = false;
     this.canAttack = false;
+    this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
     this.dashSpeed = 500;
@@ -223,7 +224,8 @@ blinkRed() {
   }
 
   AnimAttaque() {
-    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack) {
+    if (Phaser.Input.Keyboard.JustDown(this.attack) && this.canAttack && this.canAttackAgain) {
+      this.canAttackAgain = false;
       this.player.body.setSize(60, 60);
       if (this.canShoot && this.scene.time.now > this.lastShootTime + this.shootCooldown) {
         this.shoot(); // Appelle la méthode de tir
@@ -261,7 +263,8 @@ blinkRed() {
       });
 
       // Détruire la hitbox après un court délai pour simuler un coup rapide
-      this.scene.time.delayedCall(200, () => {
+      this.scene.time.delayedCall(250, () => {
+        this.canAttackAgain = true;
         hitbox.destroy(); // Supprimer la hitbox après l'attaque
       });
       }
