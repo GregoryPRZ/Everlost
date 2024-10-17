@@ -242,7 +242,7 @@ export class Player {
       this.canAttackAgain
     ) {
       this.canAttackAgain = false;
-      this.player.body.setSize(58, 64); // Taille de la hitbox d'attaque
+      this.player.body.setSize(46, 60); // Taille de la hitbox d'attaque
       this.player.body.setOffset(16, 0); // Ajuster l'offset si nécessaire
       if (
         this.canShoot &&
@@ -326,8 +326,10 @@ export class Player {
 
   shoot() {
     if (!this.canShoot) return; // Vérifier si le joueur peut tirer (après avoir collecté l'épée)
+
     this.scene.sound.play("shootSound"); // Jouer le son d'attaque
     this.player.anims.play("anim_attaque", true);
+
     // Créer une balle à la position actuelle du joueur
     const bullet = this.scene.physics.add.sprite(
       this.player.x,
@@ -343,7 +345,8 @@ export class Player {
     bullet.startX = this.player.x;
     const maxDistance = 500; // Distance maximale que la balle peut parcourir (ajuster selon besoin)
 
-    bullet.setVelocityX(600 * direction); // Vitesse de la balle (600 peut être ajusté)
+    // Diminuer la vitesse de la balle (ex : 400 au lieu de 600)
+    bullet.setVelocityX(400 * direction); // Vitesse de la balle ajustée
 
     // Assurer que la balle ne soit pas affectée par la gravité
     bullet.body.setAllowGravity(false);
@@ -393,6 +396,12 @@ export class Player {
 
     // Désactiver toute interaction physique (poussée) entre la balle et l'ennemi
     bullet.body.setImmovable(true); // La balle ne bouge pas lorsqu'elle touche un ennemi
+
+    // Désactiver le tir pendant 3 secondes
+    this.canShoot = false; // Désactiver le tir
+    this.scene.time.delayedCall(3000, () => {
+      this.canShoot = true; // Réactiver le tir après 3 secondes
+    });
   }
 
   gainLife() {
