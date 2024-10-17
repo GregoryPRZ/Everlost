@@ -248,11 +248,11 @@ export class CarnivorousPlant {
 
     // Dessine le fond de la barre de vie
     this.healthBar.fillStyle(0x000000, 1); // Couleur noire pour le fond
-    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width, height); // Position
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 40, width, height); // Position
 
     // Dessine la barre de vie
     this.healthBar.fillStyle(0xff0000, 1); // Couleur rouge pour la vie
-    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 20, width * healthPercentage, height); // Position
+    this.healthBar.fillRect(this.enemy.x - width / 2, this.enemy.y - 40, width * healthPercentage, height); // Position
   }
 
   setupAnimations() {
@@ -287,6 +287,7 @@ export class CarnivorousPlant {
 
   update() {
     if (!this.scene.player.player) return; // Assurez-vous que le joueur existe
+    this.updateHealthBar();
     this.enemy.flipX = this.scene.player.player.x > this.enemy.x; // Si le joueur est à gauche, flipX = true
 
     const distanceToPlayer = Phaser.Math.Distance.Between(
@@ -454,7 +455,9 @@ export class Vine {
     this.enemy.play("swaying_vine");
   }
 
-  update() {}
+  update() {
+    this.updateHealthBar();
+  }
 
   takeDamage() {
     if (this.isInvincible) return; // Évite que le joueur prenne plusieurs coups rapidement

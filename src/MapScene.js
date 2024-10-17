@@ -21,8 +21,10 @@ export class MapScene extends Phaser.Scene {
     this.enemyText = null; // Texte pour afficher le compteur
     this.inventaireText = null;
     this.vieText = null;
+    this.timerText = null;
     this.bootsImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
+    this.dimOverlay = null;
   }
 
   preload() {
@@ -47,6 +49,31 @@ export class MapScene extends Phaser.Scene {
     fond.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
     fond.setScrollFactor(0); // Cela fixe l'image de fond à la caméra
+
+    // Ajoutez ceci dans la méthode create() de ta scène
+    this.dimOverlay = this.add.rectangle(
+      this.cameras.main.width / 2, 
+      this.cameras.main.height / 2, 
+      this.cameras.main.width, 
+      this.cameras.main.height, 
+      0x000000
+    ).setOrigin(0.5, 0.5).setAlpha(0); // Commence totalement transparent
+    this.dimOverlay.setScrollFactor(0); // Pour que le rectangle ne défile pas avec la caméra
+    this.dimOverlay.setDepth(10); // Assurez-vous qu'il est au-dessus des calques et ennemis
+
+    // Créer le texte pour le timer
+    this.timerText = this.add.text(
+      16,
+      70,
+      "", // Texte initial vide
+      { font: '48px EnchantedLand', fill: '#ffffff' } // Style du texte
+    ).setScrollFactor(0); // Centrer le texte
+
+    this.timerText.setDepth(5); // Définir une profondeur plus élevée
+
+    // Appelez startCooldown lorsque tu veux démarrer le timer
+    this.startCooldown(600000); // Par exemple, un cooldown de 2000ms (2 secondes)
+
     this.scene.get("SceneMenu").titleMusic.stop();
 
     this.mapMusic = this.sound.add("mapMusic", { loop: true });
@@ -115,16 +142,21 @@ export class MapScene extends Phaser.Scene {
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
 
+    this.enemyText.setDepth(5); // Définir une profondeur plus élevée   
+    
     this.vieText = this.add.text(16, 10, `Vie:`, {
       font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
 
+    this.vieText.setDepth(5); // Définir une profondeur plus élevée
+
     this.inventaireText = this.add.text(1040, 10, `Inventaire`, {
       font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
-    
+
+    this.inventaireText.setDepth(5); // Définir une profondeur plus élevée
 
     // Utiliser enemyObjects pour placer les ennemis
     enemyObjects.forEach((enemyData) => {
@@ -493,4 +525,54 @@ checkProximity() {
       this.notificationText = null;    // Réinitialiser la variable
     });
   }
+
+// Méthode pour démarrer le cooldown
+startCooldown(duration) {
+
+  this.luminosityTween = this.tweens.add({
+    targets: this.dimOverlay,
+    alpha: 1, // Réduit à une faible luminosité (obscurci)
+    duration: duration,
+  });
+
+  // Initialiser le temps restant
+  let remainingTime = duration;
+  this.timerText.setText(`Temps restant: ${Math.ceil(remainingTime / 1000)}s`); // Afficher le temps restant
+
+  const timerInterval = setInterval(() => {
+    // Si le joueur a collecté le coeur de diamant, arrêter le timer et restaurer la luminosité
+    if (this.player && this.player.hasDiamondHeart) {
+      clearInterval(this.timerInterval); // Arrêter le timer
+      this.timerText.setText(""); // Effacer le texte du timer
+
+      // Arrêter le tween et restaurer la luminosité
+      if (this.luminosityTween) {
+        this.luminosityTween.stop(); // Arrêter le tween en cours
+      }
+      this.tweens.add({
+        targets: this.dimOverlay,
+        alpha: 0, // Rétablir la luminosité normale (aucun assombrissement)
+        duration: 500, // Durée du retour à la normale
+      });
+
+      return; // Ne pas continuer le timer
+    }
+    remainingTime -= 1000; // Diminuer le temps restant d'une seconde
+
+    // Mettre à jour le texte du timer
+    this.timerText.setText(`Temps restant: ${Math.ceil(remainingTime / 1000)}s`);
+
+    // Vérifier si le temps est écoulé
+    if (remainingTime <= 0) {
+      clearInterval(timerInterval); // Arrêter le timer
+      this.timerText.setText(""); // Effacer le texte du timer
+
+      // Appeler la méthode de mort du joueur
+      if (this.player && this.player.die) {
+        this.player.die(); // Le joueur meurt lorsque le timer atteint 0
+      }
+    }
+  }, 1000); // Mettre à jour toutes les secondes
+}
+
 }

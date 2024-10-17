@@ -28,11 +28,11 @@ export class Player {
     );
 
     this.hasTripleJump = false;
-    this.canUseDash = true; // Le dash n'est pas disponible au début
+    this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
     this.canShoot = false;
-    this.canAttack = true;
+    this.canAttack = false;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -357,7 +357,7 @@ export class Player {
 
   shoot() {
     if (!this.canShoot) return; // Vérifier si le joueur peut tirer (après avoir collecté l'épée)
-
+    this.cooldownBar.visible = false; // Cacher la barre après le cooldown
     this.scene.sound.play("shootSound"); // Jouer le son d'attaque
     this.player.anims.play("anim_attaque", true);
 
@@ -670,6 +670,12 @@ export class Player {
     this.scene.showNotification(
       "Vous avez trouvé le coeur de diamant ! Vous ressentez comme une sensation étrange..."
     );
+
+    // Arrêter le timer et masquer le texte
+    if (this.scene.timerInterval) {
+      clearInterval(this.scene.timerInterval); // Arrêter le timer
+    }
+    this.scene.timerText.setText(''); // Effacer le texte du timer
   }
 
   updateCooldownBar(percentage) {
