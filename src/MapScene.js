@@ -382,7 +382,7 @@ checkProximity() {
 
   updateEnemyText() {
     // Vérifie si l'ennemiText et le joueur existent avant de mettre à jour le texte
-    if (this.enemyText && this.enemy && this.player) {
+    if (this.enemyText && this.player) {
       this.enemyText.setText(`Ennemis battus: ${this.defeatedEnemies}/${this.totalEnemies}`);
     } else {
       console.warn("Impossible de mettre à jour le texte des ennemis battus. L'élément texte ou le joueur est manquant.");
@@ -391,31 +391,21 @@ checkProximity() {
 
 
   updateLifeDisplay() {
-      // Vérifie que le joueur existe avant de tenter d'accéder à ses propriétés
-      if (!this.player) {
-        console.error("Le joueur n'est pas défini !");
-        return;
-      }
-    
-      // Vérifie que la barre de vie existe
-      if (!this.lifeBar) {
-        console.error("La barre de vie n'est pas définie !");
-        return;
-      }
+    if (!this.player) return; // Vérifie que le joueur existe
       
-      let lifePoints = this.player.lifePoints;
-      // Change l'image de la barre de vie selon les vies restantes
-      if (lifePoints === 5) {
-        this.lifeBar.setTexture("full");
-      } else if (lifePoints === 4) {
-        this.lifeBar.setTexture("1hit");
-      } else if (lifePoints === 3) {
-        this.lifeBar.setTexture("2hit");
-      } else if (lifePoints === 2) {
-        this.lifeBar.setTexture("3hit");
-      } else if (lifePoints === 1) {
-        this.lifeBar.setTexture("4hit");
-      }
+    let lifePoints = this.player.lifePoints;
+    // Change l'image de la barre de vie selon les vies restantes
+    if (lifePoints === 5) {
+      this.lifeBar.setTexture("full");
+    } else if (lifePoints === 4) {
+      this.lifeBar.setTexture("1hit");
+    } else if (lifePoints === 3) {
+      this.lifeBar.setTexture("2hit");
+    } else if (lifePoints === 2) {
+      this.lifeBar.setTexture("3hit");
+    } else if (lifePoints === 1) {
+      this.lifeBar.setTexture("4hit");
+    }
   }
 
   handleDeath() {
