@@ -616,7 +616,6 @@
         {
          "draworder":"topdown",
          "id":11,
-         "locked":true,
          "name":"calque_ennemis",
          "objects":[
                 {
@@ -1788,6 +1787,24 @@
                  "width":0,
                  "x":5715.49773755656,
                  "y":3803.73303167421
+                }, 
+                {
+                 "height":0,
+                 "id":113,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemyType",
+                         "type":"string",
+                         "value":"crow"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":816.601233875491,
+                 "y":5819.40549635446
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2352,7 +2369,7 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":113,
+ "nextobjectid":114,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",
