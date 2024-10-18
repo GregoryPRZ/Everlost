@@ -85,6 +85,10 @@ export class Player {
 
   die() {
     if (this.player) {
+      // Arrêter l'intervalle si le joueur meurt
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval); // Arrête le timer
+      }
       this.player.body.setEnable(false); // Désactiver la physique
       this.player.setVisible(false); // Rendre le joueur invisible
       this.player.body.destroy(); // Détruit le joueur quand il n'a plus de vie

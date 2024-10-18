@@ -170,6 +170,12 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32,
     });
+
+    this.load.spritesheet("firefly", "src/assets/enemy/firefly.png", {
+      frameWidth: 8,
+      frameHeight: 8,
+    });
+    console.log("L'image de luciole est chargée."); // Vérifier le chargement
   }
 
 

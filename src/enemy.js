@@ -613,3 +613,59 @@ export class Crow {
     });
   }
 }
+
+export class Firefly {
+  constructor(scene, x, y) {
+    this.scene = scene;
+    this.sprite = scene.add.sprite(x, y, "firefly");
+    this.sprite.setDepth(3); // Assurez-vous que la luciole est au-dessus des autres éléments
+    this.sprite.setScale(2); // Assurez-vous que la luciole est au-dessus des autres éléments
+    console.log("Sprite de luciole créé :", this.sprite);
+
+    this.light = this.scene.lights.addLight(x, y, 50).setColor(0xffd700).setIntensity(0); // La lumière commence invisible
+
+    // Mouvement aléatoire
+    this.move();
+
+    this.setupAnimations();
+  }
+
+  move() {
+    this.scene.tweens.add({
+      targets: this.sprite,
+      x: this.sprite.x + Phaser.Math.Between(-30, 30),
+      y: this.sprite.y + Phaser.Math.Between(-30, 30),
+      duration: Phaser.Math.Between(2000, 4000),
+      repeat: -1,
+      yoyo: true,
+      ease: 'Sine.easeInOut'
+    });
+  }
+
+  setupAnimations() {
+    if (!this.scene.anims.exists('firefly_anim')) {
+      this.scene.anims.create({
+        key: "firefly_anim",
+        frames: this.scene.anims.generateFrameNumbers("firefly", {
+          start: 0,
+          end: 1,
+        }),
+        frameRate: 6,
+        repeat: -1,
+      });
+    }
+    this.sprite.play("firefly_anim");
+  }
+
+  update() {
+    this.light.setPosition(this.sprite.x, this.sprite.y);
+  }
+
+  updateLightIntensity(globalAlpha) {
+    if (globalAlpha <= 0.5) {
+      this.light.setIntensity(1); // Active la lumière si la scène est sombre
+    } else {
+      this.light.setIntensity(0); // Désactive la lumière sinon
+    }
+  }
+}
