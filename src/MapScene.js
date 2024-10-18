@@ -1,4 +1,4 @@
-import { Blob, CarnivorousPlant, Vine, Crow } from "./enemy.js";
+import { Blob, CarnivorousPlant, Vine, Crow, Firefly } from "./enemy.js";
 import { Boots, Dash, Heart, DiamondHeart, Sword, DreamSword} from "./objects.js";
 import { Player } from "./Player.js"; 
 
@@ -15,6 +15,7 @@ export class MapScene extends Phaser.Scene {
     this.enemies = null; // Pour stocker les ennemis
     this.enemyObjects = [];
     this.enemyBullets = null;
+    this.fireflies = [];
     this.objects = []; // Nouveau tableau pour stocker les objets
     this.totalEnemies = 0; // Nombre total d'ennemis
     this.defeatedEnemies = 0; // Nombre d'ennemis vaincus
@@ -111,7 +112,7 @@ export class MapScene extends Phaser.Scene {
     this.calque_mort.setCollisionByProperty({ estMortel: true }); // Assurez-vous que cela correspond à la propriété que vous avez définie dans Tiled.
 
     this.physics.world.setBounds(0, 0, 7680, 6144);
-    this.cameras.main.setBounds(0, 0, 7080, 6144);
+    this.cameras.main.setBounds(0, 0, 7680, 6144);
 
     // Créer le joueur
     this.player = new Player(
@@ -233,6 +234,23 @@ export class MapScene extends Phaser.Scene {
       }
   });
 
+  // Activer le système de lumière dans la scène
+  this.lights.enable().setAmbientColor(0x555555); // Lumière ambiante faible
+
+  this.fireflyGroup = this.physics.add.group(); // Créer un groupe pour les lucioles  
+
+  // Ajouter quelques lucioles à des positions aléatoires
+  for (let i = 0; i < 500; i++) {
+    const x = Phaser.Math.Between(100, 7080);
+    const y = Phaser.Math.Between(100, 6044);
+    const firefly = new Firefly(this, x, y);
+    this.fireflies.push(firefly);
+    console.log('Luciole créée:', firefly);
+    console.log('Position:', firefly.sprite.x, firefly.sprite.y);
+    console.log('Profondeur:', firefly.sprite.depth);
+  }
+
+
   const objectLayer = this.carteDuNiveau.getObjectLayer('calque_objets').objects;
 
   objectLayer.forEach((objectData) => {
@@ -338,6 +356,14 @@ export class MapScene extends Phaser.Scene {
       }
     });
 
+  // Mettre à jour chaque luciole
+  this.fireflies.forEach(firefly => {
+    firefly.update(); // Mettre à jour la position de la lumière
+
+    // Vérifier la luminosité de la scène et ajuster la lumière de la luciole
+    const globalAlpha = this.dimOverlay.alpha; // Vérifie l'obscurcissement de la scène
+    firefly.updateLightIntensity(globalAlpha); // Ajuste l'intensité de la lumière
+  });
     
 
   // Vérifier si tous les ennemis sont battus
@@ -404,9 +430,17 @@ checkProximity() {
 
   checkVictoryCondition() {
     if (this.player.hasDiamondHeart) {
+      // Arrêter le timer
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+      }
       this.mapMusic.stop(); // Lecture en boucle
       this.scene.start("GoodEnd");
     } else {
+      // Arrêter le timer
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+      }
       this.mapMusic.stop(); // Lecture en boucle
       this.scene.start("BadEnd");
     }
@@ -449,22 +483,27 @@ checkProximity() {
     // Créer une image pour les bottes
     this.swordImage = this.add.image(944, 70, "sword").setOrigin(0, 0).setScale(2);
     this.swordImage.setTint(0x000000); // Applique une teinte noire
+    this.swordImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.swordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.dashImage = this.add.image(1008, 70, "dash").setOrigin(0, 0).setScale(2);
     this.dashImage.setTint(0x000000); // Applique une teinte noire
+    this.dashImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.dashImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.bootsImage = this.add.image(1072, 70, "boots").setOrigin(0, 0).setScale(2);
     this.bootsImage.setTint(0x000000); // Applique une teinte noire
+    this.bootsImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.bootsImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.dreamSwordImage = this.add.image(1136, 70, "upgraded_sword").setOrigin(0, 0).setScale(2);
     this.dreamSwordImage.setTint(0x000000); // Applique une teinte noire
+    this.dreamSwordImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.dreamSwordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.diamondHeartImage = this.add.image(1200, 70, "diamond_heart").setOrigin(0, 0).setScale(2);
     this.diamondHeartImage.setTint(0x000000); // Applique une teinte noire
+    this.diamondHeartImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.diamondHeartImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
   }
 
@@ -529,6 +568,12 @@ checkProximity() {
 // Méthode pour démarrer le cooldown
 startCooldown(duration) {
 
+  // Si un ancien intervalle existe déjà, on l'efface
+  if (this.timerInterval) {
+    clearInterval(this.timerInterval);
+  }
+
+
   this.luminosityTween = this.tweens.add({
     targets: this.dimOverlay,
     alpha: 1, // Réduit à une faible luminosité (obscurci)
@@ -539,7 +584,7 @@ startCooldown(duration) {
   let remainingTime = duration;
   this.timerText.setText(`Temps restant: ${Math.ceil(remainingTime / 1000)}s`); // Afficher le temps restant
 
-  const timerInterval = setInterval(() => {
+  this.timerInterval = setInterval(() => {
     // Si le joueur a collecté le coeur de diamant, arrêter le timer et restaurer la luminosité
     if (this.player && this.player.hasDiamondHeart) {
       clearInterval(this.timerInterval); // Arrêter le timer
@@ -564,7 +609,7 @@ startCooldown(duration) {
 
     // Vérifier si le temps est écoulé
     if (remainingTime <= 0) {
-      clearInterval(timerInterval); // Arrêter le timer
+      clearInterval(this.timerInterval); // Arrêter le timer
       this.timerText.setText(""); // Effacer le texte du timer
 
       // Appeler la méthode de mort du joueur
