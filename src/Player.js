@@ -286,6 +286,7 @@ export class Player {
           hitbox,
           this.scene.enemyBullets,
           (hitbox, bullet) => {
+            this.scene.sound.play("poisonSplashSound");
             bullet.destroy(); // Détruire la balle si elle touche la hitbox d'attaque
           }
         );
