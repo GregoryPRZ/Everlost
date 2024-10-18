@@ -31,8 +31,8 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = false;
-    this.canAttack = false;
+    this.canShoot = true;
+    this.canAttack = true;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -415,7 +415,6 @@ export class Player {
         if (enemySprite.instance) {
           enemySprite.instance.takeDamage(); // L'ennemi subit des dégâts
           bullet.destroy(); // Détruire la balle après l'impact
-          this.gainLife();
         }
       }
     );
@@ -437,14 +436,6 @@ export class Player {
     this.scene.time.delayedCall(1500, () => {
       this.canShoot = true; // Réactiver le tir après 3 secondes
     });
-  }
-
-  gainLife() {
-    // Limiter le nombre de points de vie à un maximum de 5 (ou autre limite)
-    if (this.lifePoints < 5) {
-      this.lifePoints++;
-      this.scene.updateLifeDisplay(); // Mettre à jour l'affichage des points de vie
-    }
   }
 
   AnimMouvement() {

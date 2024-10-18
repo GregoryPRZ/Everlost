@@ -73,7 +73,7 @@ export class MapScene extends Phaser.Scene {
     this.timerText.setDepth(5); // Définir une profondeur plus élevée
 
     // Appelez startCooldown lorsque tu veux démarrer le timer
-    this.startCooldown(600000); // Par exemple, un cooldown de 2000ms (2 secondes)
+    this.startCooldown(100000); // Par exemple, un cooldown de 2000ms (2 secondes)
 
     this.scene.get("SceneMenu").titleMusic.stop();
 
