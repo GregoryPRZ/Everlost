@@ -24,6 +24,10 @@ export class MapScene extends Phaser.Scene {
     this.vieText = null;
     this.timerText = null;
     this.bootsImage = null; // Image pour les bottes dans l'interface
+    this.swordImage = null; // Image pour les bottes dans l'interface
+    this.dashImage = null; // Image pour les bottes dans l'interface
+    this.dreamSwordImage = null; // Image pour les bottes dans l'interface
+    this.diamondHeartImage = null; // Image pour les bottes dans l'interface
     this.notificationText = null; // Texte de la popup
     this.dimOverlay = null;
   }
@@ -70,10 +74,10 @@ export class MapScene extends Phaser.Scene {
       { font: '48px EnchantedLand', fill: '#ffffff' } // Style du texte
     ).setScrollFactor(0); // Centrer le texte
 
-    this.timerText.setDepth(5); // Définir une profondeur plus élevée
+    this.timerText.setDepth(15); // Définir une profondeur plus élevée
 
     // Appelez startCooldown lorsque tu veux démarrer le timer
-    this.startCooldown(100000); // Par exemple, un cooldown de 2000ms (2 secondes)
+    this.startCooldown(900000); // Par exemple, un cooldown de 2000ms (2 secondes)
 
     this.scene.get("SceneMenu").titleMusic.stop();
 
@@ -126,6 +130,7 @@ export class MapScene extends Phaser.Scene {
     this.lifeBar = this.add.sprite(80, 10, "full").setOrigin(0, 0); // Position en haut à enemy_gauche
     this.lifeBar.setScale(2);
     this.lifeBar.setScrollFactor(0); // Pour que la barre de vie ne bouge pas avec la caméra
+    this.lifeBar.setDepth(15); // Définir une profondeur plus élevée
 
     this.createUIObjects();  
     
@@ -143,21 +148,21 @@ export class MapScene extends Phaser.Scene {
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
 
-    this.enemyText.setDepth(5); // Définir une profondeur plus élevée   
+    this.enemyText.setDepth(15); // Définir une profondeur plus élevée   
     
     this.vieText = this.add.text(16, 10, `Vie:`, {
       font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
 
-    this.vieText.setDepth(5); // Définir une profondeur plus élevée
+    this.vieText.setDepth(15); // Définir une profondeur plus élevée
 
     this.inventaireText = this.add.text(1040, 10, `Inventaire`, {
       font: '48px EnchantedLand',
       fill: '#ffffff'
     }).setScrollFactor(0); // Le texte reste fixe lors du défilement de la caméra
 
-    this.inventaireText.setDepth(5); // Définir une profondeur plus élevée
+    this.inventaireText.setDepth(15); // Définir une profondeur plus élevée
 
     // Utiliser enemyObjects pour placer les ennemis
     enemyObjects.forEach((enemyData) => {
@@ -321,6 +326,41 @@ export class MapScene extends Phaser.Scene {
       this
     );
 
+      // Créer une mini-carte en bas à droite
+      this.minimap = this.cameras.add(
+        this.cameras.main.width - 200, // Position X
+        this.cameras.main.height - 200, // Position Y
+        150, // Largeur
+        150 // Hauteur
+    ).setZoom(0.1); // Ajuster le zoom pour que la carte tienne dans le petit carré
+
+    // La mini-carte suit la même zone que la carte principale
+    this.minimap.setBounds(0, 0, this.carteDuNiveau.widthInPixels, this.carteDuNiveau.heightInPixels);
+    this.minimap.startFollow(this.player.player); // La mini-carte suit le joueur
+    this.minimap.setBackgroundColor(0x000000); // Fond noir pour la mini-carte
+
+    // Ignore tous les éléments de l'interface utilisateur
+    this.minimap.ignore(fond);
+    this.minimap.ignore(this.timerText);
+    this.minimap.ignore(this.enemyText);
+    this.minimap.ignore(this.vieText);
+    this.minimap.ignore(this.inventaireText);
+    this.minimap.ignore(this.lifeBar);
+    this.minimap.ignore(this.bootsImage);
+    this.minimap.ignore(this.swordImage);
+    this.minimap.ignore(this.dashImage);
+    this.minimap.ignore(this.dreamSwordImage);
+    this.minimap.ignore(this.diamondHeartImage);
+
+    this.minimap.ignore(this.dimOverlay);
+    this.minimap.ignore(this.fireflyGroup);
+
+    // Ajouter un cadre à la mini-carte (optionnel)
+    const minimapFrame = this.add.graphics();
+    minimapFrame.lineStyle(3, 0xffffff); // Bordure blanche
+    minimapFrame.strokeRect(this.cameras.main.width - 200, this.cameras.main.height - 200, 150, 150);
+    minimapFrame.setScrollFactor(0); // Pour que le cadre reste fixe même si la caméra bouge
+
     // Suivre le joueur avec la caméra
     this.cameras.main.startFollow(this.player.player);
 //----------------------------------------------------------------------------
@@ -483,27 +523,27 @@ checkProximity() {
     // Créer une image pour les bottes
     this.swordImage = this.add.image(944, 70, "sword").setOrigin(0, 0).setScale(2);
     this.swordImage.setTint(0x000000); // Applique une teinte noire
-    this.swordImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+    this.swordImage.setDepth(15); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.swordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.dashImage = this.add.image(1008, 70, "dash").setOrigin(0, 0).setScale(2);
     this.dashImage.setTint(0x000000); // Applique une teinte noire
-    this.dashImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+    this.dashImage.setDepth(15); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.dashImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.bootsImage = this.add.image(1072, 70, "boots").setOrigin(0, 0).setScale(2);
     this.bootsImage.setTint(0x000000); // Applique une teinte noire
-    this.bootsImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+    this.bootsImage.setDepth(15); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.bootsImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.dreamSwordImage = this.add.image(1136, 70, "upgraded_sword").setOrigin(0, 0).setScale(2);
     this.dreamSwordImage.setTint(0x000000); // Applique une teinte noire
-    this.dreamSwordImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+    this.dreamSwordImage.setDepth(15); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.dreamSwordImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
 
     this.diamondHeartImage = this.add.image(1200, 70, "diamond_heart").setOrigin(0, 0).setScale(2);
     this.diamondHeartImage.setTint(0x000000); // Applique une teinte noire
-    this.diamondHeartImage.setDepth(5); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
+    this.diamondHeartImage.setDepth(15); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
     this.diamondHeartImage.setScrollFactor(0); // Fixe l'image pour qu'elle ne bouge pas avec la caméra
   }
 
@@ -557,6 +597,8 @@ checkProximity() {
     ).setOrigin(0.5); // Centrer l'origine pour que le texte soit au milieu
 
     this.notificationText.setScrollFactor(0); // Fixe le texte pour qu'il reste à l'écran
+
+    this.minimap.ignore(this.notificationText);
 
     // Faire disparaître la notification après 2 secondes
     this.time.delayedCall(10000, () => {
