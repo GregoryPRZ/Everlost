@@ -31,8 +31,8 @@ export class Player {
     this.canUseDash = false; // Le dash n'est pas disponible au début
 
     // Variables pour le dash
-    this.canShoot = true;
-    this.canAttack = true;
+    this.canShoot = false;
+    this.canAttack = false;
     this.canAttackAgain = true;
     this.hasDiamondHeart = false;
     this.isDashing = false;
@@ -286,6 +286,7 @@ export class Player {
           hitbox,
           this.scene.enemyBullets,
           (hitbox, bullet) => {
+            this.scene.sound.play("poisonSplashSound");
             bullet.destroy(); // Détruire la balle si elle touche la hitbox d'attaque
           }
         );
@@ -566,15 +567,12 @@ export class Player {
         // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
-        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
       } else if (this.nbSaut === 2 && this.hasTripleJump) {
         // Double saut
         this.player.setVelocityY(-330);
         this.nbSaut++;
-        this.player.anims.play("anim_saut", true); // Jouer l'animation de saut
-        this.tripleSaut = false;
         this.player.anims.play("anim_saut", true);
         this.scene.sound.play("jumpSound"); // Jouer le son de saut
       }
